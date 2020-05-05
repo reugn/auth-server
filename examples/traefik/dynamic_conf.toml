@@ -10,8 +10,15 @@
       trustForwardHeader = true
 
   [http.routers]
+    [http.routers.token-router]
+      rule = "Path(`/token`)"
+      service = "auth-server"
+      entrypoints = ["http"]
+      priority = 2
+
     [http.routers.auth-router]
-      rule = "hostregexp(`{host:.*}`)"
+      rule = "HostRegexp(`{host:.*}`)"
       middlewares = ["test-auth"]
       service = "auth-server"
       entrypoints = ["http"]
+      priority = 1
