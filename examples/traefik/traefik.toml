@@ -1,0 +1,22 @@
+[global]
+  checkNewVersion = true
+  sendAnonymousUsage = true
+
+[entryPoints]
+  [entryPoints.websecure]
+    address = ":443"
+  [entryPoints.http]
+    address = ":8082"
+
+# Enable API and dashboard
+[api]
+  dashboard = true
+  insecure = true
+
+[providers]
+  [providers.file]
+    filename = "/etc/traefik/dynamic_conf.toml"
+    watch = true
+
+  [providers.docker]
+    network = "proxy"

@@ -1,0 +1,17 @@
+[http]
+  [http.services]
+    [http.services.auth-server]
+      [[http.services.auth-server.loadBalancer.servers]]
+        url = "http://auth-server:8081/"
+
+  [http.middlewares]
+    [http.middlewares.test-auth.forwardAuth]
+      address = "http://auth-server:8081/auth"
+      trustForwardHeader = true
+
+  [http.routers]
+    [http.routers.auth-router]
+      rule = "hostregexp(`{host:.*}`)"
+      middlewares = ["test-auth"]
+      service = "auth-server"
+      entrypoints = ["http"]
