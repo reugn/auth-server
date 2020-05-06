@@ -71,9 +71,13 @@ func parseProxy() proxy.RequestParser {
 
 func parseRepo() repository.Repository {
 	var repo repository.Repository
+	var err error
 	switch *repoParam {
 	case "local":
 		repo = repository.NewLocalRepo()
+	case "aerospike":
+		repo, err = repository.NewAerospikeRepositoryFromEnv()
+		utils.Check(err)
 	default:
 		panic("Invalid repository provider")
 	}
