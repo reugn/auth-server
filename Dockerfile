@@ -10,4 +10,4 @@ WORKDIR /go/bin
 COPY --from=build /go/src/app/bin /go/bin
 COPY ./secrets ./secrets
 EXPOSE 8081
-ENTRYPOINT /go/bin/auth
+ENTRYPOINT ["/go/bin/auth"]
