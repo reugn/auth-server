@@ -31,7 +31,7 @@ func (tp *TraefikParser) ParseAuthorizationToken(r *http.Request) string {
 // ParseRequestDetails parses and returns a RequestDetails from the original request
 func (tp *TraefikParser) ParseRequestDetails(r *http.Request) *repository.RequestDetails {
 	return &repository.RequestDetails{
-		Method: r.Header["X-Forwarded-Method"][0],
-		URI:    r.Header["X-Forwarded-Uri"][0],
+		Method: r.Header.Get("X-Forwarded-Method"),
+		URI:    r.Header.Get("X-Forwarded-Uri"),
 	}
 }
