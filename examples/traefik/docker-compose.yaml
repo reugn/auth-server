@@ -27,7 +27,7 @@ services:
     build:
       dockerfile: Dockerfile
       context: ../../.
-    command: -repo=traefik 
+    command: "-proxy=traefik -repo=local"
     labels:
       - "traefik.enable=true"
     networks:
