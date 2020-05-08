@@ -21,14 +21,13 @@ var (
 
 func main() {
 	flag.Parse()
-	parseAlgo()
 
 	// load ssl keys
 	keys, err := auth.NewKeys()
 	utils.Check(err)
 
 	// start http server
-	server := NewHTTPServer(*serverHostParam, *serverPortParam, parseRepo(), keys)
+	server := NewHTTPServer(*serverHostParam, *serverPortParam, keys)
 	server.start()
 }
 

@@ -20,15 +20,16 @@ type HTTPServer struct {
 }
 
 // NewHTTPServer returns a new instance of HTTPServer
-func NewHTTPServer(host string, port int, repo repository.Repository, keys *auth.Keys) *HTTPServer {
+func NewHTTPServer(host string, port int, keys *auth.Keys) *HTTPServer {
 	addr := host + ":" + strconv.Itoa(port)
-	generator := auth.NewJWTGenerator(keys)
-	validator := auth.NewJWTValidator(keys, repo)
+	repository := parseRepo()
+	generator := auth.NewJWTGenerator(keys, parseAlgo())
+	validator := auth.NewJWTValidator(keys, repository)
 
 	return &HTTPServer{
 		addr,
 		parseProxy(),
-		repo,
+		repository,
 		generator,
 		validator,
 	}

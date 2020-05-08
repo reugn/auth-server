@@ -9,17 +9,18 @@ import (
 
 // JWTGenerator generates an AccessToken
 type JWTGenerator struct {
-	Keys *Keys
+	Keys          *Keys
+	SigningMethod jwt.SigningMethod
 }
 
 // NewJWTGenerator returns a new instance of JWTGenerator
-func NewJWTGenerator(keys *Keys) *JWTGenerator {
-	return &JWTGenerator{keys}
+func NewJWTGenerator(keys *Keys, signingMethod jwt.SigningMethod) *JWTGenerator {
+	return &JWTGenerator{keys, signingMethod}
 }
 
 // Generate generates an AccessToken using username and role claims
 func (gen *JWTGenerator) Generate(username string, role repository.UserRole) (*AccessToken, error) {
-	token := jwt.New(jwt.SigningMethodRS256)
+	token := jwt.New(gen.SigningMethod)
 	claims := Claims{}
 
 	// set custom claims
