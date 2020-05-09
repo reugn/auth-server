@@ -24,8 +24,12 @@ func NewLocalRepo() *Local {
 			"/dashboard",
 		},
 		{
-			"GET",
+			"POST",
 			"/auth",
+		},
+		{
+			"GET",
+			"/health",
 		},
 	}
 	perms[1] = requestDetails
