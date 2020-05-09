@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"strings"
 
 	as "github.com/aerospike/aerospike-client-go"
 	"github.com/reugn/auth-server/utils"
@@ -113,21 +114,21 @@ func (aero *AerospikeRepository) AuthenticateBasic(username string, password str
 
 // AuthorizeRequest checks if the role has permissions to access the endpoint
 func (aero *AerospikeRepository) AuthorizeRequest(userRole UserRole, request RequestDetails) bool {
-	record, err := aero.client.Get(nil, aero.baseKey, string(userRole))
+	record, err := aero.client.Get(nil, aero.authKey, string(userRole))
 	if err != nil {
 		log.Printf(err.Error())
 		return false
 	}
 	// Bin(1: [{method: GET, uri: /health}])
-	permBin := record.Bins[string(userRole)].([]map[string]string)
+	scopes := record.Bins[string(userRole)].([]map[string]string)
 
-	return isAuthorizedRequest(permBin, request)
+	return isAuthorizedRequest(scopes, request)
 }
 
-func isAuthorizedRequest(perms []map[string]string, request RequestDetails) bool {
-	for _, details := range perms {
-		if (details["method"] == "*" || details["method"] == request.Method) &&
-			(details["uri"] == "*" || details["uri"] == request.URI) {
+func isAuthorizedRequest(scopes []map[string]string, request RequestDetails) bool {
+	for _, scope := range scopes {
+		if (scope["method"] == "*" || scope["method"] == request.Method) &&
+			(scope["uri"] == "*" || strings.HasPrefix(request.URI, scope["uri"])) {
 			return true
 		}
 	}
