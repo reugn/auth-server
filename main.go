@@ -1,7 +1,6 @@
 package main
 
 import (
-	"crypto"
 	"flag"
 
 	"github.com/dgrijalva/jwt-go"
@@ -35,20 +34,11 @@ func parseAlgo() *jwt.SigningMethodRSA {
 	var signingMethodRSA *jwt.SigningMethodRSA
 	switch *algoParam {
 	case "RS256":
-		signingMethodRSA = &jwt.SigningMethodRSA{
-			Name: "RS256",
-			Hash: crypto.SHA256,
-		}
+		signingMethodRSA = jwt.SigningMethodRS256
 	case "RS384":
-		signingMethodRSA = &jwt.SigningMethodRSA{
-			Name: "RS384",
-			Hash: crypto.SHA384,
-		}
+		signingMethodRSA = jwt.SigningMethodRS384
 	case "RS512":
-		signingMethodRSA = &jwt.SigningMethodRSA{
-			Name: "RS512",
-			Hash: crypto.SHA512,
-		}
+		signingMethodRSA = jwt.SigningMethodRS512
 	default:
 		panic("Invalid signing method")
 	}
