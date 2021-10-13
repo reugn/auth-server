@@ -8,6 +8,7 @@ import (
 	"github.com/reugn/auth-server/auth"
 	"github.com/reugn/auth-server/proxy"
 	"github.com/reugn/auth-server/repository"
+	"github.com/reugn/auth-server/utils"
 )
 
 // HTTPServer is an auth http server wrapper
@@ -45,6 +46,9 @@ func (ws *HTTPServer) start() {
 	// readiness route
 	http.HandleFunc("/ready", readyActionHandler)
 
+	// version route
+	http.HandleFunc("/version", versionActionHandler)
+
 	// token issuing route
 	// uses basic authentication
 	http.HandleFunc("/token", ws.tokenActionHandler)
@@ -53,7 +57,8 @@ func (ws *HTTPServer) start() {
 	// validates bearer JWT
 	http.HandleFunc("/auth", ws.authActionHandler)
 
-	http.ListenAndServe(ws.addr, nil)
+	err := http.ListenAndServe(ws.addr, nil)
+	utils.Check(err)
 }
 
 func rootActionHandler(w http.ResponseWriter, r *http.Request) {
@@ -69,6 +74,10 @@ func healthActionHandler(w http.ResponseWriter, r *http.Request) {
 
 func readyActionHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Ok")
+}
+
+func versionActionHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprint(w, authServerVersion)
 }
 
 func (ws *HTTPServer) tokenActionHandler(w http.ResponseWriter, r *http.Request) {
