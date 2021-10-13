@@ -1,12 +1,12 @@
 package repository
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"strconv"
-	"strings"
 
-	as "github.com/aerospike/aerospike-client-go"
+	as "github.com/aerospike/aerospike-client-go/v5"
 	"github.com/reugn/auth-server/utils"
 )
 
@@ -19,7 +19,7 @@ type aerospikeEnv struct {
 	authorizationKey string
 }
 
-// Aerospike repository implementation
+// AerospikeRepository implements the Repository interface backed by Aerospike Database.
 type AerospikeRepository struct {
 	client  *as.Client
 	env     aerospikeEnv
@@ -62,7 +62,7 @@ func getAerospikeEnv() aerospikeEnv {
 	return env
 }
 
-// NewAerospikeRepositoryFromEnv returns a new instance of AerospikeRepository using env configuration
+// NewAerospikeRepositoryFromEnv returns a new instance of AerospikeRepository using env configuration.
 func NewAerospikeRepositoryFromEnv() (*AerospikeRepository, error) {
 	env := getAerospikeEnv()
 	client, err := as.NewClient(env.hostname, env.port)
@@ -88,13 +88,14 @@ func NewAerospikeRepositoryFromEnv() (*AerospikeRepository, error) {
 	}, nil
 }
 
-// AuthenticateBasic validates basic username and password before issuing a JWT
+// AuthenticateBasic validates the basic username and password before issuing a JWT.
 func (aero *AerospikeRepository) AuthenticateBasic(username string, password string) *UserDetails {
 	record, err := aero.client.Get(nil, aero.baseKey, username)
 	if err != nil {
-		log.Printf(err.Error())
+		log.Println(err.Error())
 		return nil
 	}
+
 	sha256pwd := utils.Sha256(password)
 	// Bin(user1: {username: user1, password: sha256, role: 1})
 	userBin := record.Bins[username].(map[string]interface{})
@@ -112,25 +113,15 @@ func (aero *AerospikeRepository) AuthenticateBasic(username string, password str
 	}
 }
 
-// AuthorizeRequest checks if the role has permissions to access the endpoint
+// AuthorizeRequest checks if the role has permissions to access the endpoint.
 func (aero *AerospikeRepository) AuthorizeRequest(userRole UserRole, request RequestDetails) bool {
-	record, err := aero.client.Get(nil, aero.authKey, string(userRole))
+	record, err := aero.client.Get(nil, aero.authKey, fmt.Sprint(userRole))
 	if err != nil {
-		log.Printf(err.Error())
+		log.Println(err.Error())
 		return false
 	}
 	// Bin(1: [{method: GET, uri: /health}])
-	scopes := record.Bins[string(userRole)].([]map[string]string)
+	scopes := record.Bins[fmt.Sprint(userRole)].([]map[string]string)
 
 	return isAuthorizedRequest(scopes, request)
-}
-
-func isAuthorizedRequest(scopes []map[string]string, request RequestDetails) bool {
-	for _, scope := range scopes {
-		if (scope["method"] == "*" || scope["method"] == request.Method) &&
-			(scope["uri"] == "*" || strings.HasPrefix(request.URI, scope["uri"])) {
-			return true
-		}
-	}
-	return false
 }
