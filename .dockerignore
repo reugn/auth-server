@@ -1,4 +1,5 @@
 .git
+.github
 .cache
 
 examples/
