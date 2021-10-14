@@ -55,7 +55,10 @@ func getClaims(token *jwt.Token) (*Claims, error) {
 	}
 
 	claims := Claims{}
-	json.Unmarshal(jsonClaims, &claims)
+	err = json.Unmarshal(jsonClaims, &claims)
+	if err != nil {
+		return nil, err
+	}
 
 	return &claims, nil
 }
