@@ -6,22 +6,22 @@ import (
 	"log"
 	"time"
 
-	"github.com/dgrijalva/jwt-go"
+	"github.com/golang-jwt/jwt/v4"
 	"github.com/reugn/auth-server/repository"
 )
 
-// JWTValidator validates and authorizes an AccessToken
+// JWTValidator validates and authorizes an AccessToken.
 type JWTValidator struct {
 	keys *Keys
 	repo repository.Repository
 }
 
-// NewJWTValidator returns a new instance of JWTValidator
+// NewJWTValidator returns a new instance of JWTValidator.
 func NewJWTValidator(key *Keys, repo repository.Repository) *JWTValidator {
 	return &JWTValidator{key, repo}
 }
 
-// validate validates an AccessToken
+// validate validates the AccessToken.
 func (val *JWTValidator) validate(jtwToken string) (*Claims, error) {
 	token, err := jwt.Parse(jtwToken, func(token *jwt.Token) (interface{}, error) {
 		return val.keys.PublicKey, nil
@@ -63,7 +63,7 @@ func getClaims(token *jwt.Token) (*Claims, error) {
 	return &claims, nil
 }
 
-// Authorize validates the token and authorizes the actual request
+// Authorize validates the token and authorizes the actual request.
 func (val *JWTValidator) Authorize(token string, request *repository.RequestDetails) bool {
 	claims, err := val.validate(token)
 	if err != nil {

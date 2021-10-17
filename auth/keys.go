@@ -5,43 +5,47 @@ import (
 	"errors"
 	"io/ioutil"
 
-	"github.com/dgrijalva/jwt-go"
+	"github.com/golang-jwt/jwt/v4"
 )
 
-// Keys container for private and public keys
+// Keys represents a container for the private and public keys.
 type Keys struct {
 	PrivateKey *rsa.PrivateKey
 	PublicKey  *rsa.PublicKey
 }
 
-// NewKeys returns a new instance of Keys
+// NewKeys returns a new instance of Keys.
 func NewKeys() (*Keys, error) {
 	return NewKeysFromFile(env.privateKeyPath, env.publicKeyPath)
 }
 
-// NewKeysFromFile returns a new instance of Keys using file pathes
+// NewKeysFromFile creates and returns a new instance of Keys from the files.
 func NewKeysFromFile(privateKeyPath string, publicKeyPath string) (*Keys, error) {
 	priv, err := parsePrivateKey(&privateKeyPath, nil)
 	if err != nil {
 		return nil, err
 	}
+
 	pub, err := parsePublicKey(&publicKeyPath, nil)
 	if err != nil {
 		return nil, err
 	}
+
 	return &Keys{priv, pub}, nil
 }
 
-// NewKeysFromPem returns a new instance of Keys using pem byte arrays
+// NewKeysFromPem creates and returns a new instance of Keys from the pem byte arrays.
 func NewKeysFromPem(privatePem []byte, publicPem []byte) (*Keys, error) {
 	priv, err := parsePrivateKey(nil, privatePem)
 	if err != nil {
 		return nil, err
 	}
+
 	pub, err := parsePublicKey(nil, publicPem)
 	if err != nil {
 		return nil, err
 	}
+
 	return &Keys{priv, pub}, nil
 }
 
