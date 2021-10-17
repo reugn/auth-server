@@ -7,7 +7,6 @@ import (
 	"strconv"
 
 	as "github.com/aerospike/aerospike-client-go/v5"
-	"github.com/reugn/auth-server/utils"
 )
 
 type aerospikeEnv struct {
@@ -29,7 +28,14 @@ type AerospikeRepository struct {
 
 func getAerospikeEnv() aerospikeEnv {
 	// set defaults
-	env := aerospikeEnv{"localhost", 3000, "auth", "", "basic", "authorization"}
+	env := aerospikeEnv{
+		hostname:         "localhost",
+		port:             3000,
+		namespase:        "test",
+		setName:          "auth",
+		basicAuthKey:     "basic",
+		authorizationKey: "authorization",
+	}
 
 	hostname, ok := os.LookupEnv("AUTH_SERVER_AEROSPIKE_HOST")
 	if ok {
@@ -89,6 +95,7 @@ func NewAerospikeRepositoryFromEnv() (*AerospikeRepository, error) {
 }
 
 // AuthenticateBasic validates the basic username and password before issuing a JWT.
+// Uses the bcrypt password-hashing function to validate the password.
 func (aero *AerospikeRepository) AuthenticateBasic(username string, password string) *UserDetails {
 	record, err := aero.client.Get(nil, aero.baseKey, username)
 	if err != nil {
@@ -96,11 +103,15 @@ func (aero *AerospikeRepository) AuthenticateBasic(username string, password str
 		return nil
 	}
 
-	sha256pwd := utils.Sha256(password)
+	providedPwd, hashErr := hashAndSalt(password)
+	if hashErr != nil {
+		log.Println(err.Error())
+		return nil
+	}
 	// Bin(user1: {username: user1, password: sha256, role: 1})
 	userBin := record.Bins[username].(map[string]interface{})
 	if pass, ok := userBin["password"]; ok {
-		if pass.(string) != sha256pwd {
+		if !pwdMatch(pass.(string), providedPwd) {
 			return nil
 		}
 	} else {
