@@ -1,6 +1,10 @@
 package repository
 
-import "strings"
+import (
+	"strings"
+
+	"golang.org/x/crypto/bcrypt"
+)
 
 // UserRole represents a user role.
 type UserRole int
@@ -35,4 +39,27 @@ func isAuthorizedRequest(scopes []map[string]string, request RequestDetails) boo
 		}
 	}
 	return false
+}
+
+func hashAndSalt(pwd string) ([]byte, error) {
+	bytePwd := []byte(pwd)
+
+	// Use bcrypt.GenerateFromPassword to hash and salt the password.
+	hash, err := bcrypt.GenerateFromPassword(bytePwd, bcrypt.MinCost)
+	if err != nil {
+		return nil, err
+	}
+
+	return hash, nil
+}
+
+func pwdMatch(stored string, provided []byte) bool {
+	byteStored := []byte(stored)
+
+	err := bcrypt.CompareHashAndPassword(byteStored, provided)
+	if err != nil {
+		return false
+	}
+
+	return true
 }

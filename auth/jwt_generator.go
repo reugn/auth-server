@@ -3,22 +3,22 @@ package auth
 import (
 	"time"
 
-	"github.com/dgrijalva/jwt-go"
+	"github.com/golang-jwt/jwt/v4"
 	"github.com/reugn/auth-server/repository"
 )
 
-// JWTGenerator generates an AccessToken
+// JWTGenerator generates an AccessToken.
 type JWTGenerator struct {
 	Keys          *Keys
 	SigningMethod jwt.SigningMethod
 }
 
-// NewJWTGenerator returns a new instance of JWTGenerator
+// NewJWTGenerator returns a new instance of JWTGenerator.
 func NewJWTGenerator(keys *Keys, signingMethod jwt.SigningMethod) *JWTGenerator {
 	return &JWTGenerator{keys, signingMethod}
 }
 
-// Generate generates an AccessToken using username and role claims
+// Generate generates an AccessToken using the username and role claims.
 func (gen *JWTGenerator) Generate(username string, role repository.UserRole) (*AccessToken, error) {
 	token := jwt.New(gen.SigningMethod)
 	claims := Claims{}

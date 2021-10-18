@@ -3,14 +3,14 @@ package main
 import (
 	"flag"
 
-	"github.com/dgrijalva/jwt-go"
+	"github.com/golang-jwt/jwt/v4"
 	"github.com/reugn/auth-server/auth"
 	"github.com/reugn/auth-server/proxy"
 	"github.com/reugn/auth-server/repository"
 	"github.com/reugn/auth-server/utils"
 )
 
-const authServerVersion = "0.2.0"
+const authServerVersion = "0.3.0"
 
 var (
 	serverHostParam = flag.String("host", "0.0.0.0", "Server host")

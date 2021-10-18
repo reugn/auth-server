@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"net"
 	"net/http"
 	"strconv"
 
@@ -11,7 +12,13 @@ import (
 	"github.com/reugn/auth-server/utils"
 )
 
-// HTTPServer is an auth http server wrapper
+var rateLimiter = NewIPRateLimiter(1, 10)
+
+var ipsWhiteList = map[string]struct{}{
+	"127.0.0.1": {},
+}
+
+// HTTPServer is the authentication HTTP server wrapper.
 type HTTPServer struct {
 	addr         string
 	parser       proxy.RequestParser
@@ -20,7 +27,7 @@ type HTTPServer struct {
 	jwtValidtor  *auth.JWTValidator
 }
 
-// NewHTTPServer returns a new instance of HTTPServer
+// NewHTTPServer returns a new instance of HTTPServer.
 func NewHTTPServer(host string, port int, keys *auth.Keys) *HTTPServer {
 	addr := host + ":" + strconv.Itoa(port)
 	repository := parseRepo()
@@ -28,36 +35,59 @@ func NewHTTPServer(host string, port int, keys *auth.Keys) *HTTPServer {
 	validator := auth.NewJWTValidator(keys, repository)
 
 	return &HTTPServer{
-		addr,
-		parseProxy(),
-		repository,
-		generator,
-		validator,
+		addr:         addr,
+		parser:       parseProxy(),
+		repo:         repository,
+		jwtGenerator: generator,
+		jwtValidtor:  validator,
 	}
 }
 
+func rateLimiterMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ip, _, err := net.SplitHostPort(r.RemoteAddr)
+		if err != nil {
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+
+		_, ok := ipsWhiteList[ip]
+		if !ok {
+			limiter := rateLimiter.GetLimiter(ip)
+			if !limiter.Allow() {
+				http.Error(w, http.StatusText(http.StatusTooManyRequests), http.StatusTooManyRequests)
+				return
+			}
+		}
+
+		next.ServeHTTP(w, r)
+	})
+}
+
 func (ws *HTTPServer) start() {
+	mux := http.NewServeMux()
+
 	// root route
-	http.HandleFunc("/", rootActionHandler)
+	mux.HandleFunc("/", rootActionHandler)
 
 	// health route
-	http.HandleFunc("/health", healthActionHandler)
+	mux.HandleFunc("/health", healthActionHandler)
 
 	// readiness route
-	http.HandleFunc("/ready", readyActionHandler)
+	mux.HandleFunc("/ready", readyActionHandler)
 
 	// version route
-	http.HandleFunc("/version", versionActionHandler)
+	mux.HandleFunc("/version", versionActionHandler)
 
 	// token issuing route
 	// uses basic authentication
-	http.HandleFunc("/token", ws.tokenActionHandler)
+	mux.HandleFunc("/token", ws.tokenActionHandler)
 
 	// authorization route
 	// validates bearer JWT
-	http.HandleFunc("/auth", ws.authActionHandler)
+	mux.HandleFunc("/auth", ws.authActionHandler)
 
-	err := http.ListenAndServe(ws.addr, nil)
+	err := http.ListenAndServe(ws.addr, rateLimiterMiddleware(mux))
 	utils.Check(err)
 }
 

@@ -6,7 +6,6 @@ import (
 	"os"
 
 	"github.com/hashicorp/vault/api"
-	"github.com/reugn/auth-server/utils"
 )
 
 type vaultEnv struct {
@@ -69,6 +68,7 @@ func NewVaultRepositoryFromEnv() (*VaultRepository, error) {
 }
 
 // AuthenticateBasic validates the basic username and password before issuing a JWT.
+// Uses the bcrypt password-hashing function to validate the password.
 func (vr *VaultRepository) AuthenticateBasic(username string, password string) *UserDetails {
 	secret, err := vr.client.Logical().Read(vr.env.basicAuthKey)
 	if err != nil {
@@ -76,7 +76,11 @@ func (vr *VaultRepository) AuthenticateBasic(username string, password string) *
 		return nil
 	}
 
-	sha256pwd := utils.Sha256(password)
+	providedPwd, hashErr := hashAndSalt(password)
+	if hashErr != nil {
+		log.Println(err.Error())
+		return nil
+	}
 
 	data, ok := secret.Data["data"].(map[string]interface{})
 	if !ok {
@@ -85,7 +89,7 @@ func (vr *VaultRepository) AuthenticateBasic(username string, password string) *
 	}
 
 	if pass, ok := data["password"]; ok {
-		if pass.(string) != sha256pwd {
+		if !pwdMatch(pass.(string), providedPwd) {
 			return nil
 		}
 	} else {

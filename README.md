@@ -6,6 +6,8 @@
 This project provides tools to set up a custom authentication and authorization server.  
 `auth-server` can act as a proxy middleware or be configured in a stand-alone mode. It doesn't require any third-party software integration. Use one of the [available repositories](./repository) to configure backend storage, or implement one of your own.
 
+**Note:** This project has not yet passed security testing. Make sure you know what you are doing when setting up your own OAuth2 provider.
+
 ## Introduction
 * **Authentication** is used by a server when the server needs to know exactly who is accessing their information or site.
 * **Authorization** is a process by which a server determines if the client has permission to use a resource or access a file.
