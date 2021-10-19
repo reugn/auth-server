@@ -53,10 +53,11 @@ func hashAndSalt(pwd string) ([]byte, error) {
 	return hash, nil
 }
 
-func pwdMatch(stored string, provided []byte) bool {
-	byteStored := []byte(stored)
+func pwdMatch(hashed string, plain string) bool {
+	hashedBytes := []byte(hashed)
+	plainBytes := []byte(plain)
 
-	err := bcrypt.CompareHashAndPassword(byteStored, provided)
+	err := bcrypt.CompareHashAndPassword(hashedBytes, plainBytes)
 	if err != nil {
 		return false
 	}

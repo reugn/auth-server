@@ -103,15 +103,10 @@ func (aero *AerospikeRepository) AuthenticateBasic(username string, password str
 		return nil
 	}
 
-	providedPwd, hashErr := hashAndSalt(password)
-	if hashErr != nil {
-		log.Println(err.Error())
-		return nil
-	}
 	// Bin(user1: {username: user1, password: sha256, role: 1})
 	userBin := record.Bins[username].(map[string]interface{})
-	if pass, ok := userBin["password"]; ok {
-		if !pwdMatch(pass.(string), providedPwd) {
+	if hashed, ok := userBin["password"].(string); ok {
+		if !pwdMatch(hashed, password) {
 			return nil
 		}
 	} else {
