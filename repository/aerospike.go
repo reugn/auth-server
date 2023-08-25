@@ -6,7 +6,7 @@ import (
 	"os"
 	"strconv"
 
-	as "github.com/aerospike/aerospike-client-go/v5"
+	as "github.com/aerospike/aerospike-client-go/v6"
 )
 
 type aerospikeEnv struct {
