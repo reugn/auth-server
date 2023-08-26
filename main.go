@@ -10,7 +10,7 @@ import (
 	"github.com/reugn/auth-server/utils"
 )
 
-const authServerVersion = "0.3.0"
+const authServerVersion = "0.3.1"
 
 var (
 	serverHostParam = flag.String("host", "0.0.0.0", "Server host")
