@@ -12,7 +12,7 @@ type environmentVariables struct {
 	publicKeyPath  string
 }
 
-var env environmentVariables = environmentVariables{time.Hour, "", ""}
+var env = environmentVariables{time.Hour, "", ""}
 
 func init() {
 	// read environment variables

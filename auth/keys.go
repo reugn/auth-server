@@ -3,7 +3,7 @@ package auth
 import (
 	"crypto/rsa"
 	"errors"
-	"io/ioutil"
+	"os"
 
 	"github.com/golang-jwt/jwt/v4"
 )
@@ -51,28 +51,26 @@ func NewKeysFromPem(privatePem []byte, publicPem []byte) (*Keys, error) {
 
 func parsePrivateKey(privateKeyPath *string, pem []byte) (*rsa.PrivateKey, error) {
 	if privateKeyPath != nil {
-		pem, err := ioutil.ReadFile(*privateKeyPath)
+		pem, err := os.ReadFile(*privateKeyPath)
 		if err != nil {
 			return nil, err
 		}
 		return jwt.ParseRSAPrivateKeyFromPEM(pem)
 	} else if pem != nil {
 		return jwt.ParseRSAPrivateKeyFromPEM(pem)
-	} else {
-		return nil, errors.New("parsePrivateKey nil parameters")
 	}
+	return nil, errors.New("parsePrivateKey nil parameters")
 }
 
 func parsePublicKey(publicKeyPath *string, pem []byte) (*rsa.PublicKey, error) {
 	if publicKeyPath != nil {
-		pem, err := ioutil.ReadFile(*publicKeyPath)
+		pem, err := os.ReadFile(*publicKeyPath)
 		if err != nil {
 			return nil, err
 		}
 		return jwt.ParseRSAPublicKeyFromPEM(pem)
 	} else if pem != nil {
 		return jwt.ParseRSAPublicKeyFromPEM(pem)
-	} else {
-		return nil, errors.New("parsePublicKey nil parameters")
 	}
+	return nil, errors.New("parsePublicKey nil parameters")
 }

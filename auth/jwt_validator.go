@@ -2,7 +2,6 @@ package auth
 
 import (
 	"encoding/json"
-	"errors"
 	"log"
 	"time"
 
@@ -41,7 +40,7 @@ func (val *JWTValidator) validateClaims(token *jwt.Token) (*Claims, error) {
 
 	// validate expiration
 	if claims.ExpiresAt < time.Now().Unix() {
-		return nil, errors.New("Expired JWT")
+		return nil, jwt.ErrTokenExpired
 	}
 
 	return claims, nil

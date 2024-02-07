@@ -41,6 +41,7 @@ func isAuthorizedRequest(scopes []map[string]string, request RequestDetails) boo
 	return false
 }
 
+//nolint:unused
 func hashAndSalt(pwd string) ([]byte, error) {
 	bytePwd := []byte(pwd)
 
@@ -58,9 +59,5 @@ func pwdMatch(hashed string, plain string) bool {
 	plainBytes := []byte(plain)
 
 	err := bcrypt.CompareHashAndPassword(hashedBytes, plainBytes)
-	if err != nil {
-		return false
-	}
-
-	return true
+	return err == nil
 }

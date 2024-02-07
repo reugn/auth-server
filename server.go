@@ -98,15 +98,15 @@ func rootActionHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "")
 }
 
-func healthActionHandler(w http.ResponseWriter, r *http.Request) {
+func healthActionHandler(w http.ResponseWriter, _ *http.Request) {
 	fmt.Fprintf(w, "Ok")
 }
 
-func readyActionHandler(w http.ResponseWriter, r *http.Request) {
+func readyActionHandler(w http.ResponseWriter, _ *http.Request) {
 	fmt.Fprintf(w, "Ok")
 }
 
-func versionActionHandler(w http.ResponseWriter, r *http.Request) {
+func versionActionHandler(w http.ResponseWriter, _ *http.Request) {
 	fmt.Fprint(w, authServerVersion)
 }
 
