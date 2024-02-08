@@ -3,7 +3,7 @@ package auth
 import (
 	"time"
 
-	"github.com/golang-jwt/jwt/v4"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/reugn/auth-server/repository"
 )
 
@@ -29,9 +29,9 @@ func (gen *JWTGenerator) Generate(username string, role repository.UserRole) (*A
 
 	// set standard claims
 	now := time.Now()
-	claims.IssuedAt = now.Unix()
+	claims.IssuedAt = jwt.NewNumericDate(now)
 	if env.expireAfter > 0 {
-		claims.ExpiresAt = now.Add(env.expireAfter).Unix()
+		claims.ExpiresAt = jwt.NewNumericDate(now.Add(env.expireAfter))
 	}
 
 	token.Claims = &claims

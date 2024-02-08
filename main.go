@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 
-	"github.com/golang-jwt/jwt/v4"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/reugn/auth-server/auth"
 	"github.com/reugn/auth-server/proxy"
 	"github.com/reugn/auth-server/repository"

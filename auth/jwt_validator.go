@@ -5,7 +5,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/golang-jwt/jwt/v4"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/reugn/auth-server/repository"
 )
 
@@ -39,7 +39,7 @@ func (val *JWTValidator) validateClaims(token *jwt.Token) (*Claims, error) {
 	}
 
 	// validate expiration
-	if claims.ExpiresAt < time.Now().Unix() {
+	if claims.ExpiresAt.Before(time.Now()) {
 		return nil, jwt.ErrTokenExpired
 	}
 

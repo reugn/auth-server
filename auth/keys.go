@@ -5,7 +5,7 @@ import (
 	"errors"
 	"os"
 
-	"github.com/golang-jwt/jwt/v4"
+	"github.com/golang-jwt/jwt/v5"
 )
 
 // Keys represents a container for the private and public keys.

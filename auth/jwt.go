@@ -3,7 +3,7 @@ package auth
 import (
 	"encoding/json"
 
-	"github.com/golang-jwt/jwt/v4"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/reugn/auth-server/repository"
 )
 
@@ -28,7 +28,7 @@ func (t TokenType) ToString() string {
 
 // Claims is the custom JWT claims container.
 type Claims struct {
-	jwt.StandardClaims
+	jwt.RegisteredClaims
 	Username string              `json:"user"`
 	Role     repository.UserRole `json:"role"`
 }

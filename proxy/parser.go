@@ -6,7 +6,7 @@ import (
 	"github.com/reugn/auth-server/repository"
 )
 
-// RequestParser is the interface to a custom request parser.
+// RequestParser represents a request parser.
 type RequestParser interface {
 
 	// ParseAuthorizationToken parses and returns an Authorization token from the original request.
