@@ -25,3 +25,10 @@ linters:
     - unconvert
     - unparam
     - unused
+
+issues:
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - unparam
+        - funlen

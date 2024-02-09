@@ -8,6 +8,7 @@ require (
 	github.com/hashicorp/vault/api v1.11.0
 	golang.org/x/crypto v0.18.0
 	golang.org/x/time v0.5.0
+	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
@@ -25,6 +26,7 @@ require (
 	github.com/hashicorp/go-secure-stdlib/strutil v0.1.2 // indirect
 	github.com/hashicorp/go-sockaddr v1.0.2 // indirect
 	github.com/hashicorp/hcl v1.0.1-vault-3 // indirect
+	github.com/kr/text v0.2.0 // indirect
 	github.com/mattn/go-colorable v0.1.11 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect

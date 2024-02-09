@@ -10,7 +10,9 @@ import (
 // SimpleParser implements the RequestParser interface.
 type SimpleParser struct{}
 
-// NewSimpleParser returns a new instance of SimpleParser.
+var _ RequestParser = (*SimpleParser)(nil)
+
+// NewSimpleParser returns a new SimpleParser.
 func NewSimpleParser() *SimpleParser {
 	return &SimpleParser{}
 }

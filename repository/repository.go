@@ -7,7 +7,7 @@ import (
 )
 
 // UserRole represents a user role.
-type UserRole int
+type UserRole string
 
 // UserDetails represents user details.
 type UserDetails struct {
@@ -17,11 +17,11 @@ type UserDetails struct {
 
 // RequestDetails represents request details.
 type RequestDetails struct {
-	Method string
-	URI    string
+	Method string `yaml:"method"`
+	URI    string `yaml:"uri"`
 }
 
-// Repository is the interface to a custom authentication/authorization backend facade.
+// Repository represents an authentication/authorization backend facade.
 type Repository interface {
 
 	// AuthenticateBasic validates the basic username and password before issuing a JWT.
@@ -45,7 +45,7 @@ func isAuthorizedRequest(scopes []map[string]string, request RequestDetails) boo
 func hashAndSalt(pwd string) ([]byte, error) {
 	bytePwd := []byte(pwd)
 
-	// Use bcrypt.GenerateFromPassword to hash and salt the password.
+	// use bcrypt.GenerateFromPassword to hash and salt the password
 	hash, err := bcrypt.GenerateFromPassword(bytePwd, bcrypt.MinCost)
 	if err != nil {
 		return nil, err

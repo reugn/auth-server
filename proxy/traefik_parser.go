@@ -10,7 +10,9 @@ import (
 // TraefikParser implements the RequestParser interface.
 type TraefikParser struct{}
 
-// NewTraefikParser returns a new instance of TraefikParser.
+var _ RequestParser = (*TraefikParser)(nil)
+
+// NewTraefikParser returns a new TraefikParser.
 func NewTraefikParser() *TraefikParser {
 	return &TraefikParser{}
 }

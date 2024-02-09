@@ -5,22 +5,34 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/reugn/auth-server/repository"
+	"github.com/reugn/auth-server/util/env"
+)
+
+const (
+	envTokenExpireAfterMillis = "AUTH_SERVER_ACCESS_TOKEN_EXPIRATION_MILLIS"
 )
 
 // JWTGenerator generates an AccessToken.
 type JWTGenerator struct {
-	Keys          *Keys
-	SigningMethod jwt.SigningMethod
+	keys             *Keys
+	signingMethod    jwt.SigningMethod
+	tokenExpireAfter time.Duration
 }
 
 // NewJWTGenerator returns a new instance of JWTGenerator.
 func NewJWTGenerator(keys *Keys, signingMethod jwt.SigningMethod) *JWTGenerator {
-	return &JWTGenerator{keys, signingMethod}
+	tokenExpireAfter := time.Hour // default 1 hour
+	env.ReadTime(&tokenExpireAfter, envTokenExpireAfterMillis, time.Millisecond)
+	return &JWTGenerator{
+		keys:             keys,
+		signingMethod:    signingMethod,
+		tokenExpireAfter: tokenExpireAfter,
+	}
 }
 
 // Generate generates an AccessToken using the username and role claims.
 func (gen *JWTGenerator) Generate(username string, role repository.UserRole) (*AccessToken, error) {
-	token := jwt.New(gen.SigningMethod)
+	token := jwt.New(gen.signingMethod)
 	claims := Claims{}
 
 	// set custom claims
@@ -30,12 +42,12 @@ func (gen *JWTGenerator) Generate(username string, role repository.UserRole) (*A
 	// set standard claims
 	now := time.Now()
 	claims.IssuedAt = jwt.NewNumericDate(now)
-	if env.expireAfter > 0 {
-		claims.ExpiresAt = jwt.NewNumericDate(now.Add(env.expireAfter))
+	if gen.tokenExpireAfter > 0 {
+		claims.ExpiresAt = jwt.NewNumericDate(now.Add(gen.tokenExpireAfter))
 	}
 
 	token.Claims = &claims
-	signed, err := token.SignedString(gen.Keys.PrivateKey)
+	signed, err := token.SignedString(gen.keys.privateKey)
 	if err != nil {
 		return nil, err
 	}
@@ -44,7 +56,7 @@ func (gen *JWTGenerator) Generate(username string, role repository.UserRole) (*A
 	accessToken := &AccessToken{
 		signed,
 		BearerToken.ToString(),
-		env.expireAfter.Milliseconds(),
+		gen.tokenExpireAfter.Milliseconds(),
 	}
 
 	return accessToken, nil

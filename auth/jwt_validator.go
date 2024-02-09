@@ -11,28 +11,31 @@ import (
 
 // JWTValidator validates and authorizes an AccessToken.
 type JWTValidator struct {
-	keys *Keys
-	repo repository.Repository
+	keys    *Keys
+	backend repository.Repository
 }
 
 // NewJWTValidator returns a new instance of JWTValidator.
-func NewJWTValidator(key *Keys, repo repository.Repository) *JWTValidator {
-	return &JWTValidator{key, repo}
+func NewJWTValidator(keys *Keys, backend repository.Repository) *JWTValidator {
+	return &JWTValidator{
+		keys:    keys,
+		backend: backend,
+	}
 }
 
 // validate validates the AccessToken.
-func (val *JWTValidator) validate(jtwToken string) (*Claims, error) {
+func (v *JWTValidator) validate(jtwToken string) (*Claims, error) {
 	token, err := jwt.Parse(jtwToken, func(token *jwt.Token) (interface{}, error) {
-		return val.keys.PublicKey, nil
+		return v.keys.publicKey, nil
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	return val.validateClaims(token)
+	return v.validateClaims(token)
 }
 
-func (val *JWTValidator) validateClaims(token *jwt.Token) (*Claims, error) {
+func (v *JWTValidator) validateClaims(token *jwt.Token) (*Claims, error) {
 	claims, err := getClaims(token)
 	if err != nil {
 		return nil, err
@@ -63,12 +66,12 @@ func getClaims(token *jwt.Token) (*Claims, error) {
 }
 
 // Authorize validates the token and authorizes the actual request.
-func (val *JWTValidator) Authorize(token string, request *repository.RequestDetails) bool {
-	claims, err := val.validate(token)
+func (v *JWTValidator) Authorize(token string, request *repository.RequestDetails) bool {
+	claims, err := v.validate(token)
 	if err != nil {
 		log.Println(err.Error())
 		return false
 	}
 
-	return val.repo.AuthorizeRequest(claims.Role, *request)
+	return v.backend.AuthorizeRequest(claims.Role, *request)
 }

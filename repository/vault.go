@@ -1,86 +1,84 @@
 package repository
 
 import (
+	"fmt"
 	"log"
-	"os"
-	"strconv"
 
 	"github.com/hashicorp/vault/api"
+	"github.com/reugn/auth-server/util/env"
 )
 
-type vaultEnv struct {
+// Environment variables to configure VaultRepository.
+const (
+	envVaultAddr     = "AUTH_SERVER_VAULT_ADDR"
+	envVaultToken    = "AUTH_SERVER_VAULT_TOKEN"
+	envVaultBasicKey = "AUTH_SERVER_VAULT_BASIC_KEY"
+	envVaultAuthKey  = "AUTH_SERVER_VAULT_AUTHORIZATION_KEY"
+)
+
+// vaultConfig contains VaultRepository configuration properties.
+type vaultConfig struct {
 	vaultAddr              string
 	vaultToken             string
 	basicAuthKeyPrefix     string
 	authorizationKeyPrefix string
 }
 
-// VaultRepository implements the Repository interface backed by HashiCorp Vault.
+// VaultRepository implements the Repository interface using HashiCorp Vault
+// as the storage backend.
 type VaultRepository struct {
 	client *api.Client
-	env    vaultEnv
+	config vaultConfig
 }
 
-func getVaultEnv() vaultEnv {
+var _ Repository = (*VaultRepository)(nil)
+
+func getVaultConfig() vaultConfig {
 	// set defaults
-	env := vaultEnv{
+	config := vaultConfig{
 		vaultAddr:              "localhost:8200",
 		basicAuthKeyPrefix:     "secret/basic",
 		authorizationKeyPrefix: "secret/authorization",
 	}
 
-	vaultAddr, ok := os.LookupEnv("AUTH_SERVER_VAULT_ADDR")
-	if ok {
-		env.vaultAddr = vaultAddr
-	}
-	vaultToken, ok := os.LookupEnv("AUTH_SERVER_VAULT_TOKEN")
-	if ok {
-		env.vaultToken = vaultToken
-	}
-	basicKey, ok := os.LookupEnv("AUTH_SERVER_VAULT_BASIC_KEY")
-	if ok {
-		env.basicAuthKeyPrefix = basicKey
-	}
-	authKey, ok := os.LookupEnv("AUTH_SERVER_VAULT_AUTHORIZATION_KEY")
-	if ok {
-		env.authorizationKeyPrefix = authKey
-	}
+	// read configuration from environment variables
+	env.ReadString(&config.vaultAddr, envVaultAddr)
+	env.ReadString(&config.vaultToken, envVaultToken)
+	env.ReadString(&config.basicAuthKeyPrefix, envVaultBasicKey)
+	env.ReadString(&config.authorizationKeyPrefix, envVaultAuthKey)
 
-	return env
+	return config
 }
 
-// NewVaultRepositoryFromEnv returns a new instance of VaultRepository using env configuration.
-func NewVaultRepositoryFromEnv() (*VaultRepository, error) {
-	env := getVaultEnv()
-	config := &api.Config{
-		Address: env.vaultAddr,
+// NewVault returns a new VaultRepository using environment variables for configuration.
+func NewVault() (*VaultRepository, error) {
+	config := getVaultConfig() // read configuration
+	apiConfig := &api.Config{
+		Address: config.vaultAddr,
 	}
-	client, err := api.NewClient(config)
+	client, err := api.NewClient(apiConfig)
 	if err != nil {
 		return nil, err
 	}
-	client.SetToken(env.vaultToken)
+	client.SetToken(config.vaultToken)
 
 	return &VaultRepository{
 		client: client,
-		env:    env,
+		config: config,
 	}, nil
 }
 
 // AuthenticateBasic validates the basic username and password before issuing a JWT.
-// Uses the bcrypt password-hashing function to validate the password.
+// It uses the bcrypt password-hashing function to validate the password.
 func (vr *VaultRepository) AuthenticateBasic(username string, password string) *UserDetails {
-	secret, err := vr.client.Logical().Read(vr.env.basicAuthKeyPrefix + "/" + username)
+	secret, err := vr.client.Logical().Read(vr.config.basicAuthKeyPrefix + "/" + username)
 	if err != nil {
 		log.Println(err.Error())
 		return nil
 	}
 
-	if hashed, ok := secret.Data["password"].(string); ok {
-		if !pwdMatch(hashed, password) {
-			return nil
-		}
-	} else {
+	hashed, ok := secret.Data["password"].(string)
+	if !ok || !pwdMatch(hashed, password) {
 		return nil
 	}
 
@@ -92,7 +90,7 @@ func (vr *VaultRepository) AuthenticateBasic(username string, password string) *
 
 // AuthorizeRequest checks if the role has permissions to access the endpoint.
 func (vr *VaultRepository) AuthorizeRequest(userRole UserRole, request RequestDetails) bool {
-	secret, err := vr.client.Logical().Read(vr.env.authorizationKeyPrefix + "/" + strconv.Itoa(int(userRole)))
+	secret, err := vr.client.Logical().Read(fmt.Sprintf("%s/%s", vr.config.authorizationKeyPrefix, userRole))
 	if err != nil {
 		log.Println(err.Error())
 		return false
@@ -100,7 +98,7 @@ func (vr *VaultRepository) AuthorizeRequest(userRole UserRole, request RequestDe
 
 	scopes, ok := secret.Data["scopes"].([]map[string]string)
 	if !ok {
-		log.Printf("VaultRepository: error on reading scopes for %d", userRole)
+		log.Printf("VaultRepository: error on reading scopes for: %s", userRole)
 		return false
 	}
 

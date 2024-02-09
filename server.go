@@ -9,7 +9,7 @@ import (
 	"github.com/reugn/auth-server/auth"
 	"github.com/reugn/auth-server/proxy"
 	"github.com/reugn/auth-server/repository"
-	"github.com/reugn/auth-server/utils"
+	"github.com/reugn/auth-server/util"
 )
 
 var rateLimiter = NewIPRateLimiter(1, 10)
@@ -30,7 +30,7 @@ type HTTPServer struct {
 // NewHTTPServer returns a new instance of HTTPServer.
 func NewHTTPServer(host string, port int, keys *auth.Keys) *HTTPServer {
 	addr := host + ":" + strconv.Itoa(port)
-	repository := parseRepo()
+	repository := parseRepository()
 	generator := auth.NewJWTGenerator(keys, parseAlgo())
 	validator := auth.NewJWTValidator(keys, repository)
 
@@ -88,7 +88,7 @@ func (ws *HTTPServer) start() {
 	mux.HandleFunc("/auth", ws.authActionHandler)
 
 	err := http.ListenAndServe(ws.addr, rateLimiterMiddleware(mux))
-	utils.Check(err)
+	util.Check(err)
 }
 
 func rootActionHandler(w http.ResponseWriter, r *http.Request) {

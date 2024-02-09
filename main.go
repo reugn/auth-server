@@ -2,12 +2,14 @@ package main
 
 import (
 	"flag"
+	"fmt"
+	"strings"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/reugn/auth-server/auth"
 	"github.com/reugn/auth-server/proxy"
 	"github.com/reugn/auth-server/repository"
-	"github.com/reugn/auth-server/utils"
+	"github.com/reugn/auth-server/util"
 )
 
 const authServerVersion = "0.3.1"
@@ -25,7 +27,7 @@ func main() {
 
 	// load ssl keys
 	keys, err := auth.NewKeys()
-	utils.Check(err)
+	util.Check(err)
 
 	// start http server
 	server := NewHTTPServer(*serverHostParam, *serverPortParam, keys)
@@ -34,7 +36,7 @@ func main() {
 
 func parseAlgo() *jwt.SigningMethodRSA {
 	var signingMethodRSA *jwt.SigningMethodRSA
-	switch *algoParam {
+	switch strings.ToUpper(*algoParam) {
 	case "RS256":
 		signingMethodRSA = jwt.SigningMethodRS256
 	case "RS384":
@@ -42,35 +44,39 @@ func parseAlgo() *jwt.SigningMethodRSA {
 	case "RS512":
 		signingMethodRSA = jwt.SigningMethodRS512
 	default:
-		panic("Invalid signing method")
+		panic(fmt.Sprintf("Unsupported signing method: %s", *algoParam))
 	}
 	return signingMethodRSA
 }
 
 func parseProxy() proxy.RequestParser {
 	var parser proxy.RequestParser
-	switch *proxyParam {
+	switch strings.ToLower(*proxyParam) {
 	case "simple":
 		parser = proxy.NewSimpleParser()
 	case "traefik":
 		parser = proxy.NewTraefikParser()
 	default:
-		panic("Invalid proxy provider")
+		panic(fmt.Sprintf("Unsupported proxy provider: %s", *proxyParam))
 	}
 	return parser
 }
 
-func parseRepo() repository.Repository {
+func parseRepository() repository.Repository {
 	var repo repository.Repository
 	var err error
-	switch *repoParam {
+	switch strings.ToLower(*repoParam) {
 	case "local":
-		repo = repository.NewLocalRepo()
+		repo, err = repository.NewLocal()
+		util.Check(err)
 	case "aerospike":
-		repo, err = repository.NewAerospikeRepositoryFromEnv()
-		utils.Check(err)
+		repo, err = repository.NewAerospike()
+		util.Check(err)
+	case "vault":
+		repo, err = repository.NewVault()
+		util.Check(err)
 	default:
-		panic("Invalid repository provider")
+		panic(fmt.Sprintf("Unsupported storage provider: %s", *repoParam))
 	}
 	return repo
 }
