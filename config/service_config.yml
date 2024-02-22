@@ -9,6 +9,9 @@ http:
         tps: 1024
         size: 1024
         white-list: []
+secret:
+    private-path: secrets/privkey.pem
+    public-path: secrets/cert.pem
 logger:
     level: INFO
     format: PLAIN

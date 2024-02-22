@@ -6,15 +6,7 @@ import (
 	"os"
 
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/reugn/auth-server/internal/util/env"
-)
-
-const (
-	envPrivateKeyPath = "AUTH_SERVER_PRIVATE_KEY_PATH"
-	envPublicKeyPath  = "AUTH_SERVER_PUBLIC_KEY_PATH"
-
-	defaultPrivateKeyPath = "../../secrets/privkey.pem"
-	defaultPublicKeyPath  = "../../secrets/cert.pem"
+	"github.com/reugn/auth-server/internal/config"
 )
 
 // Keys represents a container for the private and public keys.
@@ -24,14 +16,8 @@ type Keys struct {
 }
 
 // NewKeys returns a new instance of Keys.
-func NewKeys() (*Keys, error) {
-	privateKeyPath := defaultPrivateKeyPath
-	env.ReadString(&privateKeyPath, envPrivateKeyPath)
-
-	publicKeyPath := defaultPublicKeyPath
-	env.ReadString(&publicKeyPath, envPublicKeyPath)
-
-	return NewKeysFromFile(privateKeyPath, publicKeyPath)
+func NewKeys(config *config.Secret) (*Keys, error) {
+	return NewKeysFromFile(config.Private, config.Public)
 }
 
 // NewKeysFromFile creates and returns a new instance of Keys from the files.

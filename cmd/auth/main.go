@@ -25,13 +25,13 @@ func run() int {
 	rootCmd.Flags().StringVarP(&configFilePath, "config", "c", "config.yaml", "configuration file path")
 
 	rootCmd.RunE = func(_ *cobra.Command, _ []string) error {
-		// load ssl keys
-		keys, err := auth.NewKeys()
+		// read configuration file
+		config, err := readConfiguration(configFilePath)
 		if err != nil {
 			return err
 		}
-		// read configuration file
-		config, err := readConfiguration(configFilePath)
+		// load ssl keys
+		keys, err := auth.NewKeys(config.Secret)
 		if err != nil {
 			return err
 		}

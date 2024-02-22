@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/reugn/auth-server/internal/config"
 	"github.com/reugn/auth-server/internal/repository"
 )
 
@@ -14,9 +15,11 @@ func TestJWT_Authorize(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	os.Setenv(envPrivateKeyPath, defaultPrivateKeyPath)
-	os.Setenv(envPublicKeyPath, defaultPublicKeyPath)
-	keys, err := NewKeys()
+	secretConfig := &config.Secret{
+		Private: "../../secrets/privkey.pem",
+		Public:  "../../secrets/cert.pem",
+	}
+	keys, err := NewKeys(secretConfig)
 	if err != nil {
 		t.Fatal(err)
 	}

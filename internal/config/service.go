@@ -10,6 +10,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/reugn/auth-server/internal/proxy"
 	"github.com/reugn/auth-server/internal/repository"
+	"gopkg.in/yaml.v3"
 )
 
 const (
@@ -26,6 +27,7 @@ type Service struct {
 	ProxyProvider      string  `yaml:"proxy,omitempty" json:"proxy,omitempty"`
 	RepositoryProvider string  `yaml:"repository,omitempty" json:"repository,omitempty"`
 	HTTP               *HTTP   `yaml:"http,omitempty" json:"http,omitempty"`
+	Secret             *Secret `yaml:"secret,omitempty" json:"secret,omitempty"`
 	Logger             *Logger `yaml:"logger,omitempty" json:"logger,omitempty"`
 }
 
@@ -36,6 +38,7 @@ func NewServiceDefault() *Service {
 		ProxyProvider:      "simple",
 		RepositoryProvider: "local",
 		HTTP:               NewHTTPDefault(),
+		Secret:             NewSecretDefault(),
 		Logger:             NewLoggerDefault(),
 	}
 }
@@ -98,15 +101,27 @@ func (c *Service) Validate() error {
 	if err := c.HTTP.validate(); err != nil {
 		return err
 	}
+	if err := c.Secret.validate(); err != nil {
+		return err
+	}
 	if err := c.Logger.validate(); err != nil {
 		return err
 	}
 	return nil
 }
 
-// String returns string representation of the service configuration.
+// String returns a string representation of the service configuration in JSON format.
 func (c *Service) String() string {
 	data, err := json.Marshal(c)
+	if err != nil {
+		return err.Error()
+	}
+	return string(data)
+}
+
+// StringYaml returns a string representation of the service configuration in YAML format.
+func (c *Service) StringYaml() string {
+	data, err := yaml.Marshal(c)
 	if err != nil {
 		return err.Error()
 	}

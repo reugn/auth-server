@@ -44,8 +44,9 @@ func NewHTTPDefault() *HTTP {
 		Host: "0.0.0.0",
 		Port: 8080,
 		Rate: RateLimiter{
-			Tps:  1024,
-			Size: 1024,
+			Tps:       1024,
+			Size:      1024,
+			WhiteList: []string{},
 		},
 	}
 }
