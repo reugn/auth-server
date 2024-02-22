@@ -41,8 +41,7 @@ func isAuthorizedRequest(scopes []map[string]string, request RequestDetails) boo
 	return false
 }
 
-//nolint:unused
-func hashAndSalt(pwd string) ([]byte, error) {
+func HashAndSalt(pwd string) ([]byte, error) {
 	bytePwd := []byte(pwd)
 
 	// use bcrypt.GenerateFromPassword to hash and salt the password

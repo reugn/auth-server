@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/reugn/auth-server/repository"
+	"github.com/reugn/auth-server/internal/repository"
 )
 
 // TokenType represents a token type.

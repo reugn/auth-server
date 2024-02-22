@@ -3,13 +3,13 @@ package repository
 import (
 	"os"
 
-	"github.com/reugn/auth-server/util/env"
+	"github.com/reugn/auth-server/internal/util/env"
 	"gopkg.in/yaml.v3"
 )
 
 const (
 	EnvLocalConfigPath     = "AUTH_SERVER_LOCAL_CONFIG_PATH"
-	DefaultLocalConfigPath = "config/local_config.yml"
+	DefaultLocalConfigPath = "../../config/local_repository_config.yml"
 )
 
 // AuthDetails contains authentication details for the user.

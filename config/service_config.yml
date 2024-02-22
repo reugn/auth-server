@@ -1,0 +1,14 @@
+---
+signing-method: RS256
+proxy: simple
+repository: local
+http:
+    host: 0.0.0.0
+    port: 8080
+    rate:
+        tps: 1024
+        size: 1024
+        white-list: []
+logger:
+    level: INFO
+    format: PLAIN

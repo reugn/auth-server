@@ -5,7 +5,7 @@ import (
 	"log"
 
 	"github.com/hashicorp/vault/api"
-	"github.com/reugn/auth-server/util/env"
+	"github.com/reugn/auth-server/internal/util/env"
 )
 
 // Environment variables to configure VaultRepository.

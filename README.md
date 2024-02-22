@@ -4,7 +4,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/reugn/auth-server)](https://goreportcard.com/report/github.com/reugn/auth-server)
 
 This project provides tools to set up a custom authentication and authorization server.  
-`auth-server` can act as a proxy middleware or be configured in a stand-alone mode. It doesn't require any third-party software integration. Use one of the [available repositories](./repository) to configure backend storage, or implement one of your own.
+`auth-server` can act as a proxy middleware or be configured in a stand-alone mode. It doesn't require any third-party software integration. Use one of the [available repositories](internal/repository) to configure backend storage, or implement one of your own.
 
 **Note:** This project has not yet passed security testing. Make sure you know what you are doing when setting up your own OAuth2 provider.
 

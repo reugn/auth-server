@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/reugn/auth-server/repository"
+	"github.com/reugn/auth-server/internal/repository"
 )
 
 // TraefikParser implements the RequestParser interface.

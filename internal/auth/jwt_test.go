@@ -5,19 +5,17 @@ import (
 	"testing"
 
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/reugn/auth-server/repository"
+	"github.com/reugn/auth-server/internal/repository"
 )
 
-const up = "../"
-
 func TestJWT_Authorize(t *testing.T) {
-	os.Setenv(repository.EnvLocalConfigPath, up+repository.DefaultLocalConfigPath)
+	os.Setenv(repository.EnvLocalConfigPath, repository.DefaultLocalConfigPath)
 	repo, err := repository.NewLocal()
 	if err != nil {
 		t.Fatal(err)
 	}
-	os.Setenv(envPrivateKeyPath, up+defaultPrivateKeyPath)
-	os.Setenv(envPublicKeyPath, up+defaultPublicKeyPath)
+	os.Setenv(envPrivateKeyPath, defaultPrivateKeyPath)
+	os.Setenv(envPublicKeyPath, defaultPublicKeyPath)
 	keys, err := NewKeys()
 	if err != nil {
 		t.Fatal(err)

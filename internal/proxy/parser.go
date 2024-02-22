@@ -3,7 +3,7 @@ package proxy
 import (
 	"net/http"
 
-	"github.com/reugn/auth-server/repository"
+	"github.com/reugn/auth-server/internal/repository"
 )
 
 // RequestParser represents a request parser.

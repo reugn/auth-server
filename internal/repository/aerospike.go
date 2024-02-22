@@ -4,7 +4,7 @@ import (
 	"log"
 
 	as "github.com/aerospike/aerospike-client-go/v7"
-	"github.com/reugn/auth-server/util/env"
+	"github.com/reugn/auth-server/internal/util/env"
 )
 
 // Environment variables to configure AerospikeRepository.

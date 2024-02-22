@@ -4,8 +4,8 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/reugn/auth-server/repository"
-	"github.com/reugn/auth-server/util/env"
+	"github.com/reugn/auth-server/internal/repository"
+	"github.com/reugn/auth-server/internal/util/env"
 )
 
 const (

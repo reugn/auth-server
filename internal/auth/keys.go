@@ -6,15 +6,15 @@ import (
 	"os"
 
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/reugn/auth-server/util/env"
+	"github.com/reugn/auth-server/internal/util/env"
 )
 
 const (
 	envPrivateKeyPath = "AUTH_SERVER_PRIVATE_KEY_PATH"
 	envPublicKeyPath  = "AUTH_SERVER_PUBLIC_KEY_PATH"
 
-	defaultPrivateKeyPath = "secrets/privkey.pem"
-	defaultPublicKeyPath  = "secrets/cert.pem"
+	defaultPrivateKeyPath = "../../secrets/privkey.pem"
+	defaultPublicKeyPath  = "../../secrets/cert.pem"
 )
 
 // Keys represents a container for the private and public keys.

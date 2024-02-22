@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/reugn/auth-server/util"
+	"github.com/reugn/auth-server/internal/util"
 )
 
 func TestSha256(t *testing.T) {

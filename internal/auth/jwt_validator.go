@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/reugn/auth-server/repository"
+	"github.com/reugn/auth-server/internal/repository"
 )
 
 // JWTValidator validates and authorizes an AccessToken.
@@ -25,7 +25,7 @@ func NewJWTValidator(keys *Keys, backend repository.Repository) *JWTValidator {
 
 // validate validates the AccessToken.
 func (v *JWTValidator) validate(jtwToken string) (*Claims, error) {
-	token, err := jwt.Parse(jtwToken, func(token *jwt.Token) (interface{}, error) {
+	token, err := jwt.Parse(jtwToken, func(_ *jwt.Token) (interface{}, error) {
 		return v.keys.publicKey, nil
 	})
 	if err != nil {
