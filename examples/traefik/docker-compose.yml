@@ -1,20 +1,24 @@
 version: '3.4'
 
+networks:
+  proxy:
+
 services:
   reverse-proxy:
     restart: always
-    image: traefik:v2.2
+    image: traefik:v2.11
     container_name: traefik
     ports:
       - 443:443
-      - 8080:8080
       - 8082:8082
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./traefik.toml:/etc/traefik/traefik.toml
-      - ./dynamic_conf.toml:/etc/traefik/dynamic_conf.toml
+      - ./traefik.yml:/etc/traefik/traefik.yml
+      - ./dynamic-config.yml:/etc/traefik/dynamic-config.yml
     labels:
+      - "traefik.http.routers.site.entryPoints=http,websecure"
       - "traefik.enable=true"
+      - "traefik.port=8082"
     networks:
       - proxy
 
@@ -27,12 +31,5 @@ services:
     build:
       dockerfile: Dockerfile
       context: ../../.
-    command: "-proxy=traefik -repo=local"
-    labels:
-      - "traefik.enable=true"
     networks:
       - proxy
-
-networks:
-  proxy:
-    external: true

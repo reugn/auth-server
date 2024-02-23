@@ -1,10 +1,10 @@
 ---
 signing-method: RS256
-proxy: simple
+proxy: traefik
 repository: local
 http:
     host: 0.0.0.0
-    port: 8080
+    port: 8081
     rate:
         tps: 1024
         size: 1024

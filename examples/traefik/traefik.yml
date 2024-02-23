@@ -1,0 +1,21 @@
+---
+global:
+  checkNewVersion: true
+  sendAnonymousUsage: true
+
+entryPoints:
+  websecure:
+    address: ":443"
+  http:
+    address: ":8082"
+
+api:
+  dashboard: true
+  insecure: true
+
+providers:
+  file:
+    filename: /etc/traefik/dynamic-config.yml
+    watch: true
+  docker:
+    network: proxy
