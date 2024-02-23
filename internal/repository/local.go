@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"log/slog"
 	"os"
 
 	"github.com/reugn/auth-server/internal/util/env"
@@ -63,9 +64,11 @@ func (local *Local) AuthenticateBasic(username string, password string) *UserDet
 func (local *Local) AuthorizeRequest(userRole UserRole, requestDetails RequestDetails) bool {
 	if permissions, ok := local.Roles[userRole]; ok {
 		if containsRequestDetails(permissions, requestDetails) {
+			slog.Debug("Request authorized", "request", requestDetails)
 			return true
 		}
 	}
+	slog.Debug("Authorization failed for the request", "request", requestDetails)
 	return false
 }
 

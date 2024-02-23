@@ -22,8 +22,8 @@ const (
 	BasicToken
 )
 
-// ToString converts the TokenType to a string.
-func (t TokenType) ToString() string {
+// String returns the string representation of the TokenType.
+func (t TokenType) String() string {
 	return [...]string{"Bearer", "Basic"}[t]
 }
 
@@ -42,11 +42,11 @@ type AccessToken struct {
 }
 
 // Marshal marshals the AccessToken to a JSON string.
-func (t *AccessToken) Marshal() string {
+func (t *AccessToken) Marshal() (string, error) {
 	jsonByteArray, err := json.Marshal(t)
 	if err != nil {
 		slog.Debug("Failed to marshal token", "err", err)
-		return ""
+		return "", err
 	}
-	return string(jsonByteArray)
+	return string(jsonByteArray), nil
 }

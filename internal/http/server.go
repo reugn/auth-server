@@ -2,6 +2,7 @@ package http
 
 import (
 	"fmt"
+	"log/slog"
 	"net"
 	"net/http"
 
@@ -123,6 +124,7 @@ func (ws *Server) versionActionHandler(w http.ResponseWriter, _ *http.Request) {
 }
 
 func (ws *Server) tokenActionHandler(w http.ResponseWriter, r *http.Request) {
+	slog.Debug("Token generation request")
 	user, pass, ok := r.BasicAuth()
 	if !ok {
 		w.WriteHeader(http.StatusBadRequest)
@@ -138,10 +140,16 @@ func (ws *Server) tokenActionHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	fmt.Fprintf(w, "%s", accessToken.Marshal())
+	marshalled, err := accessToken.Marshal()
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	fmt.Fprintf(w, "%s", marshalled)
 }
 
 func (ws *Server) authActionHandler(w http.ResponseWriter, r *http.Request) {
+	slog.Debug("Token authorization request")
 	requestDetails := ws.parser.ParseRequestDetails(r)
 	authToken := ws.parser.ParseAuthorizationToken(r)
 

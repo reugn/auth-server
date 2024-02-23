@@ -54,9 +54,9 @@ func (gen *JWTGenerator) Generate(username string, role repository.UserRole) (*A
 
 	// create an access token
 	accessToken := &AccessToken{
-		signed,
-		BearerToken.ToString(),
-		gen.tokenExpireAfter.Milliseconds(),
+		Token:   signed,
+		Type:    BearerToken.String(),
+		Expires: gen.tokenExpireAfter.Milliseconds(),
 	}
 
 	return accessToken, nil
