@@ -20,7 +20,8 @@ func NewKeys(config *config.Secret) (*Keys, error) {
 	return NewKeysFromFile(config.Private, config.Public)
 }
 
-// NewKeysFromFile creates and returns a new instance of Keys from the files.
+// NewKeysFromFile creates and returns a new instance of Keys from the files
+// containing the secrets information.
 func NewKeysFromFile(privateKeyPath string, publicKeyPath string) (*Keys, error) {
 	priv, err := parsePrivateKey(&privateKeyPath, nil)
 	if err != nil {

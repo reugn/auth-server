@@ -1,6 +1,7 @@
 package proxy
 
 import (
+	"log/slog"
 	"net/http"
 	"strings"
 
@@ -23,11 +24,11 @@ func (tp *TraefikParser) ParseAuthorizationToken(r *http.Request) string {
 	if authHeader == "" {
 		return authHeader
 	}
-
 	splitToken := strings.Split(authHeader, "Bearer")
 	if len(splitToken) == 2 {
 		return strings.TrimSpace(splitToken[1])
 	}
+	slog.Debug("Invalid Authorization header", "header", authHeader)
 	return ""
 }
 

@@ -2,7 +2,7 @@ package auth
 
 import (
 	"encoding/json"
-	"log"
+	"log/slog"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -15,7 +15,7 @@ type JWTValidator struct {
 	backend repository.Repository
 }
 
-// NewJWTValidator returns a new instance of JWTValidator.
+// NewJWTValidator returns a new JWTValidator.
 func NewJWTValidator(keys *Keys, backend repository.Repository) *JWTValidator {
 	return &JWTValidator{
 		keys:    keys,
@@ -43,6 +43,7 @@ func (v *JWTValidator) validateClaims(token *jwt.Token) (*Claims, error) {
 
 	// validate expiration
 	if claims.ExpiresAt.Before(time.Now()) {
+		slog.Debug("Token expired")
 		return nil, jwt.ErrTokenExpired
 	}
 
@@ -69,7 +70,7 @@ func getClaims(token *jwt.Token) (*Claims, error) {
 func (v *JWTValidator) Authorize(token string, request *repository.RequestDetails) bool {
 	claims, err := v.validate(token)
 	if err != nil {
-		log.Println(err.Error())
+		slog.Debug("Failed to authorize token", "err", err)
 		return false
 	}
 

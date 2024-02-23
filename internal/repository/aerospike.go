@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"log"
+	"log/slog"
 
 	as "github.com/aerospike/aerospike-client-go/v7"
 	"github.com/reugn/auth-server/internal/util/env"
@@ -89,7 +89,7 @@ func NewAerospike() (*AerospikeRepository, error) {
 func (aero *AerospikeRepository) AuthenticateBasic(username string, password string) *UserDetails {
 	record, err := aero.client.Get(nil, aero.baseKey, username)
 	if err != nil {
-		log.Println(err.Error())
+		slog.Error("Failed to fetch record", "key", aero.baseKey, "err", err)
 		return nil
 	}
 
@@ -97,6 +97,7 @@ func (aero *AerospikeRepository) AuthenticateBasic(username string, password str
 	userBin := record.Bins[username].(map[string]interface{})
 	hashed, ok := userBin["password"].(string)
 	if !ok || !pwdMatch(hashed, password) {
+		slog.Debug("Failed to authenticate", "user", username)
 		return nil
 	}
 
@@ -110,7 +111,7 @@ func (aero *AerospikeRepository) AuthenticateBasic(username string, password str
 func (aero *AerospikeRepository) AuthorizeRequest(userRole UserRole, request RequestDetails) bool {
 	record, err := aero.client.Get(nil, aero.authKey, string(userRole))
 	if err != nil {
-		log.Println(err.Error())
+		slog.Error("Failed to fetch record", "key", aero.authKey, "err", err)
 		return false
 	}
 	// Bin(admin: [{method: GET, uri: /health}])

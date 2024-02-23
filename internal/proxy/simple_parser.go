@@ -1,6 +1,7 @@
 package proxy
 
 import (
+	"log/slog"
 	"net/http"
 	"strings"
 
@@ -27,6 +28,7 @@ func (sp *SimpleParser) ParseAuthorizationToken(r *http.Request) string {
 	if len(splitToken) == 2 {
 		return strings.TrimSpace(splitToken[1])
 	}
+	slog.Debug("Invalid Authorization header", "header", authHeader)
 	return ""
 }
 

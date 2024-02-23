@@ -2,7 +2,7 @@ package repository
 
 import (
 	"fmt"
-	"log"
+	"log/slog"
 
 	"github.com/hashicorp/vault/api"
 	"github.com/reugn/auth-server/internal/util/env"
@@ -71,14 +71,16 @@ func NewVault() (*VaultRepository, error) {
 // AuthenticateBasic validates the basic username and password before issuing a JWT.
 // It uses the bcrypt password-hashing function to validate the password.
 func (vr *VaultRepository) AuthenticateBasic(username string, password string) *UserDetails {
-	secret, err := vr.client.Logical().Read(vr.config.basicAuthKeyPrefix + "/" + username)
+	path := fmt.Sprintf("%s/%s", vr.config.basicAuthKeyPrefix, username)
+	secret, err := vr.client.Logical().Read(path)
 	if err != nil {
-		log.Println(err.Error())
+		slog.Error("Failed to read path", "path", path, "err", err)
 		return nil
 	}
 
 	hashed, ok := secret.Data["password"].(string)
 	if !ok || !pwdMatch(hashed, password) {
+		slog.Debug("Failed to authenticate", "user", username)
 		return nil
 	}
 
@@ -90,15 +92,16 @@ func (vr *VaultRepository) AuthenticateBasic(username string, password string) *
 
 // AuthorizeRequest checks if the role has permissions to access the endpoint.
 func (vr *VaultRepository) AuthorizeRequest(userRole UserRole, request RequestDetails) bool {
-	secret, err := vr.client.Logical().Read(fmt.Sprintf("%s/%s", vr.config.authorizationKeyPrefix, userRole))
+	path := fmt.Sprintf("%s/%s", vr.config.authorizationKeyPrefix, userRole)
+	secret, err := vr.client.Logical().Read(path)
 	if err != nil {
-		log.Println(err.Error())
+		slog.Error("Failed to read path", "path", path, "err", err)
 		return false
 	}
 
 	scopes, ok := secret.Data["scopes"].([]map[string]string)
 	if !ok {
-		log.Printf("VaultRepository: error on reading scopes for: %s", userRole)
+		slog.Error("Error reading scopes", "role", userRole)
 		return false
 	}
 

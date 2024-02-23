@@ -2,6 +2,7 @@ package auth
 
 import (
 	"encoding/json"
+	"log/slog"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/reugn/auth-server/internal/repository"
@@ -44,6 +45,7 @@ type AccessToken struct {
 func (t *AccessToken) Marshal() string {
 	jsonByteArray, err := json.Marshal(t)
 	if err != nil {
+		slog.Debug("Failed to marshal token", "err", err)
 		return ""
 	}
 	return string(jsonByteArray)

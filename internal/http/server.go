@@ -12,7 +12,7 @@ import (
 	"golang.org/x/time/rate"
 )
 
-// Server is the authentication HTTP server wrapper.
+// Server represents the entry point to interact with the service via HTTP requests.
 type Server struct {
 	address      string
 	version      string
@@ -78,6 +78,7 @@ func (ws *Server) rateLimiterMiddleware(next http.Handler) http.Handler {
 	})
 }
 
+// Start initiates the HTTP server.
 func (ws *Server) Start() error {
 	mux := http.NewServeMux()
 
@@ -93,12 +94,10 @@ func (ws *Server) Start() error {
 	// version route
 	mux.HandleFunc("/version", ws.versionActionHandler)
 
-	// token issuing route
-	// uses basic authentication
+	// token issuing route, requires basic authentication
 	mux.HandleFunc("/token", ws.tokenActionHandler)
 
-	// authorization route
-	// validates bearer JWT
+	// authorization route, requires a JSON Web Token
 	mux.HandleFunc("/auth", ws.authActionHandler)
 
 	return http.ListenAndServe(ws.address, ws.rateLimiterMiddleware(mux))
