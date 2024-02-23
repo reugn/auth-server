@@ -1,4 +1,4 @@
-package util
+package hash
 
 import (
 	"crypto/sha256"
@@ -9,11 +9,4 @@ import (
 func Sha256(str string) string {
 	sha256pwd := sha256.Sum256([]byte(str))
 	return fmt.Sprintf("%x", sha256pwd)
-}
-
-// Check panics if the error is not nil.
-func Check(e error) {
-	if e != nil {
-		panic(e)
-	}
 }
