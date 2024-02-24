@@ -3,4 +3,4 @@
 /vendor
 /secrets/cert.pem
 /secrets/privkey.pem
-auth-server
+/cmd/auth/auth

@@ -1,0 +1,17 @@
+---
+signing-method: RS256
+proxy: traefik
+repository: local
+http:
+    host: 0.0.0.0
+    port: 8081
+    rate:
+        tps: 1024
+        size: 1024
+        white-list: []
+secret:
+    private-path: secrets/privkey.pem
+    public-path: secrets/cert.pem
+logger:
+    level: INFO
+    format: PLAIN

@@ -1,0 +1,14 @@
+---
+users:
+  admin:
+    password: 1234
+    role: admin
+
+roles:
+  admin:
+    - method: "GET"
+      uri: "/dashboard"
+    - method: "POST"
+      uri: "/auth"
+    - method: "GET"
+      uri: "/health"

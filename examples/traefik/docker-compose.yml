@@ -1,0 +1,35 @@
+version: '3.4'
+
+networks:
+  proxy:
+
+services:
+  reverse-proxy:
+    restart: always
+    image: traefik:v2.11
+    container_name: traefik
+    ports:
+      - 443:443
+      - 8082:8082
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./traefik.yml:/etc/traefik/traefik.yml
+      - ./dynamic-config.yml:/etc/traefik/dynamic-config.yml
+    labels:
+      - "traefik.http.routers.site.entryPoints=http,websecure"
+      - "traefik.enable=true"
+      - "traefik.port=8082"
+    networks:
+      - proxy
+
+  auth-server:
+    restart: always
+    container_name: auth-server
+    ports:
+      - 8081:8081
+    image: auth-server
+    build:
+      dockerfile: Dockerfile
+      context: ../../.
+    networks:
+      - proxy

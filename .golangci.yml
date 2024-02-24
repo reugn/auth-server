@@ -1,0 +1,34 @@
+linters:
+  disable-all: true
+  enable:
+    - dupl
+    - errcheck
+    - errorlint
+    - exportloopref
+    - funlen
+    - gci
+    - goconst
+    - gocritic
+    - gocyclo
+    - gofmt
+    - goimports
+    - gosimple
+    - govet
+    - ineffassign
+    - lll
+    - misspell
+    - prealloc
+    - revive
+    - staticcheck
+    - stylecheck
+    - typecheck
+    - unconvert
+    - unparam
+    - unused
+
+issues:
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - unparam
+        - funlen
