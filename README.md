@@ -3,25 +3,29 @@
 [![PkgGoDev](https://pkg.go.dev/badge/github.com/reugn/auth-server)](https://pkg.go.dev/github.com/reugn/auth-server)
 [![Go Report Card](https://goreportcard.com/badge/github.com/reugn/auth-server)](https://goreportcard.com/report/github.com/reugn/auth-server)
 
-This project provides tools to set up a custom authentication and authorization server.  
-`auth-server` can act as a proxy middleware or be configured in a stand-alone mode. It doesn't require any third-party software integration. Use one of the [available repositories](internal/repository) to configure backend storage, or implement one of your own.
+This project offers a toolkit for building and configuring a tailored authentication and authorization service.
 
-**Note:** This project has not yet passed security testing. Make sure you know what you are doing when setting up your own OAuth2 provider.
+`auth-server` can act as a proxy middleware or be configured in a stand-alone mode. It doesn't require any third-party software integration.
+Leverage existing backend [storage repositories](internal/repository) for storing security policies or develop a custom one to suit your specific requirements.
+For information on how to configure repositories using environment variables, refer to the [repository configuration](docs/repository_configuration.md) page.
+
+> [!NOTE] 
+> This project's security has not been thoroughly evaluated. Proceed with caution when setting up your own auth provider.
 
 ## Introduction
 * **Authentication** is used by a server when the server needs to know exactly who is accessing their information or site.
 * **Authorization** is a process by which a server determines if the client has permission to use a resource or access a file.
 
-Creating an authentication and authorization strategy is always a complex process. A number of quick questions immediately arise:
+The inherent complexity of crafting an authentication and authorization strategy raises a barrage of immediate questions:
 
-* Should we set up separate services for authentication and authorization
-* How do we handle access token creation and who is responsible for this
-* Should we alter our REST service to support authorization flow
+* Would it be beneficial to utilize separate services for authentication and authorization purposes?
+* What is the process for creating access tokens, and who is tasked with this responsibility?
+* Is it necessary to adapt our REST service to support an authorization flow?
 
-The `auth-server` project tries to accumulate all of those capabilities and act as a transparent authentication and authorization proxy middleware.
+The `auth-server` project aims to address these concerns by serving as a transparent authentication and authorization proxy middleware.
 
 ## Architecture
-![architecture_diagram](./images/architecture_diagram_1.png)
+![architecture_diagram](docs/images/architecture_diagram_1.png)
 
 1. The user requests an access token (JWT), using a basic authentication header:
     ```
@@ -45,20 +49,27 @@ The `auth-server` project tries to accumulate all of those capabilities and act 
 
 ## Installation and Prerequisites
 * `auth-server` is written in Golang.
-To install the latest stable version of Go, visit https://golang.org/dl/
+To install the latest stable version of Go, visit the [releases page](https://golang.org/dl/).
+
+* Read the following [instructions](./secrets/README.md) to generate keys required to sign the token. Specify the location of the generated certificates in the service configuration file. An example of the configuration file can be found [here](config/service_config.yml).
+
+* The following example shows how to run the service using a configuration file:
+    ```
+    ./auth -c service_config.yml
+    ```
 
 * To run the project using Docker, visit their [page](https://www.docker.com/get-started) to get started. Docker images are available under the [GitHub Packages](https://github.com/reugn/auth-server/packages).
 
 * Install `docker-compose` to get started with the examples.
 
-* Read the following [instructions](./secrets/README.md) to generate keys.
-
 ## Examples
-Examples are available under the examples folder.
+Examples are available under the [examples](examples) folder.
 
 To run `auth-server` as a [Traefik](https://docs.traefik.io/) middleware:
-* `cd examples/traefik`
-* `docker-compose up -d`
+```
+cd examples/traefik
+docker-compose up -d
+```
 
 ## License
 Licensed under the Apache 2.0 License.
