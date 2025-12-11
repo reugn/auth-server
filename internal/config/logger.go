@@ -37,19 +37,34 @@ func NewLoggerDefault() *Logger {
 }
 
 var (
-	validLoggerLevels = []string{logLevelDebug, logLevelInfo, logLevelWarn,
-		logLevelWarning, logLevelError}
-	supportedLoggerFormats = []string{logFormatPlain, logFormatJSON}
+	// validLoggerLevels are the valid log levels.
+	validLoggerLevels = []string{
+		logLevelDebug,
+		logLevelInfo,
+		logLevelWarn,
+		logLevelWarning,
+		logLevelError,
+	}
+
+	// supportedLoggerFormats are the supported log formats.
+	supportedLoggerFormats = []string{
+		logFormatPlain,
+		logFormatJSON,
+	}
 )
 
+// SlogHandler returns a slog.Handler for the logger configuration.
 func (l *Logger) SlogHandler() (slog.Handler, error) {
 	if err := l.validate(); err != nil {
 		return nil, err
 	}
+
+	// get the log level
 	logLevel, err := l.logLevel()
 	if err != nil {
 		return nil, err
 	}
+
 	addSource := true
 	writer := os.Stdout
 	switch strings.ToUpper(l.Format) {
@@ -82,7 +97,7 @@ func (l *Logger) validate() error {
 	return nil
 }
 
-// logLevel returns the log level.
+// logLevel returns the slog.Level for the logger configuration.
 func (l *Logger) logLevel() (slog.Level, error) {
 	switch strings.ToUpper(l.Level) {
 	case logLevelDebug:

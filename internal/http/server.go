@@ -26,27 +26,35 @@ type Server struct {
 }
 
 // NewServer returns a new instance of Server.
+// It initializes the server with the given version, keys, and configuration.
 func NewServer(version string, keys *auth.Keys, config *config.Service) (*Server, error) {
 	address := fmt.Sprintf("%s:%d", config.HTTP.Host, config.HTTP.Port)
 	repository, err := config.Repository()
 	if err != nil {
 		return nil, err
 	}
+
+	// get the signing method
 	signingMethod, err := config.SigningMethodRSA()
 	if err != nil {
 		return nil, err
 	}
+
 	generator := auth.NewJWTGenerator(keys, signingMethod)
 	validator := auth.NewJWTValidator(keys, repository)
 
+	// get the request parser
 	requestParser, err := config.RequestParser()
 	if err != nil {
 		return nil, err
 	}
+
+	// get the IP white list
 	ipWhiteList, err := NewIPWhiteList(config.HTTP.Rate.WhiteList)
 	if err != nil {
 		return nil, err
 	}
+
 	return &Server{
 		address:      address,
 		version:      version,
@@ -61,12 +69,15 @@ func NewServer(version string, keys *auth.Keys, config *config.Service) (*Server
 
 func (ws *Server) rateLimiterMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// get the IP from the remote address
 		ip, _, err := net.SplitHostPort(r.RemoteAddr)
 		if err != nil {
 			http.Error(w, http.StatusText(http.StatusInternalServerError),
 				http.StatusInternalServerError)
 			return
 		}
+
+		// check if the IP is in the white list
 		if !ws.ipWhiteList.isAllowed(ip) {
 			limiter := ws.rateLimiter.GetLimiter(ip)
 			if !limiter.Allow() {
@@ -75,6 +86,8 @@ func (ws *Server) rateLimiterMiddleware(next http.Handler) http.Handler {
 				return
 			}
 		}
+
+		// serve the request
 		next.ServeHTTP(w, r)
 	})
 }
@@ -101,6 +114,7 @@ func (ws *Server) Start() error {
 	// authorization route, requires a JSON Web Token
 	mux.HandleFunc("/auth", ws.authActionHandler)
 
+	//nolint:gosec
 	return http.ListenAndServe(ws.address, ws.rateLimiterMiddleware(mux))
 }
 
@@ -125,27 +139,37 @@ func (ws *Server) versionActionHandler(w http.ResponseWriter, _ *http.Request) {
 
 func (ws *Server) tokenActionHandler(w http.ResponseWriter, r *http.Request) {
 	slog.Debug("Token generation request")
+	// get the basic authentication credentials
 	user, pass, ok := r.BasicAuth()
 	if !ok {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
+
+	// authenticate the user
 	userDetails := ws.repository.AuthenticateBasic(user, pass)
 	if userDetails == nil {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
+
+	// generate the access token
 	accessToken, err := ws.jwtGenerator.Generate(userDetails.UserName, userDetails.UserRole)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+
+	// marshal the access token
 	marshalled, err := accessToken.Marshal()
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	fmt.Fprintf(w, "%s", marshalled)
+
+	// write the access token to the response
+	w.Header().Set("Content-Type", "application/json")
+	fmt.Fprint(w, marshalled)
 }
 
 func (ws *Server) authActionHandler(w http.ResponseWriter, r *http.Request) {
@@ -153,7 +177,12 @@ func (ws *Server) authActionHandler(w http.ResponseWriter, r *http.Request) {
 	requestDetails := ws.parser.ParseRequestDetails(r)
 	authToken := ws.parser.ParseAuthorizationToken(r)
 
+	// authorize the request using the JWT validator and write the response
 	if !ws.jwtValidator.Authorize(authToken, requestDetails) {
 		w.WriteHeader(http.StatusUnauthorized)
+		return
 	}
+
+	// success response
+	w.WriteHeader(http.StatusOK)
 }

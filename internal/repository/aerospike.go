@@ -38,6 +38,7 @@ type AerospikeRepository struct {
 
 var _ Repository = (*AerospikeRepository)(nil)
 
+// getAerospikeConfig gets the Aerospike configuration from the environment variables.
 func getAerospikeConfig() aerospikeConfig {
 	// set defaults
 	config := aerospikeConfig{
@@ -67,10 +68,12 @@ func NewAerospike() (*AerospikeRepository, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	baseKey, err := as.NewKey(config.namespase, config.setName, config.basicAuthKey)
 	if err != nil {
 		return nil, err
 	}
+
 	authKey, err := as.NewKey(config.namespase, config.setName, config.authorizationKey)
 	if err != nil {
 		return nil, err
@@ -94,16 +97,22 @@ func (aero *AerospikeRepository) AuthenticateBasic(username string, password str
 	}
 
 	// Bin(user1: {username: user1, password: sha256, role: admin})
-	userBin := record.Bins[username].(map[string]interface{})
+	userBin := record.Bins[username].(map[string]any)
 	hashed, ok := userBin["password"].(string)
 	if !ok || !pwdMatch(hashed, password) {
 		slog.Debug("Failed to authenticate", "user", username)
 		return nil
 	}
 
+	role, ok := userBin["role"].(UserRole)
+	if !ok {
+		slog.Error("Invalid role type", "role", userBin["role"])
+		return nil
+	}
+
 	return &UserDetails{
 		UserName: username,
-		UserRole: userBin["role"].(UserRole),
+		UserRole: role,
 	}
 }
 

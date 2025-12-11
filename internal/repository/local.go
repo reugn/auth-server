@@ -1,8 +1,10 @@
 package repository
 
 import (
+	"fmt"
 	"log/slog"
 	"os"
+	"slices"
 
 	"github.com/reugn/auth-server/internal/util/env"
 	"gopkg.in/yaml.v3"
@@ -36,12 +38,12 @@ func NewLocal() (*Local, error) {
 
 	data, err := os.ReadFile(configPath)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to read configuration file %s: %w", configPath, err)
 	}
 
 	localRepository := &Local{}
 	if err = yaml.Unmarshal(data, localRepository); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to unmarshal configuration data: %w", err)
 	}
 
 	return localRepository, nil
@@ -63,20 +65,11 @@ func (local *Local) AuthenticateBasic(username string, password string) *UserDet
 // AuthorizeRequest checks if the role has permissions to access the endpoint.
 func (local *Local) AuthorizeRequest(userRole UserRole, requestDetails RequestDetails) bool {
 	if permissions, ok := local.Roles[userRole]; ok {
-		if containsRequestDetails(permissions, requestDetails) {
+		if slices.Contains(permissions, requestDetails) {
 			slog.Debug("Request authorized", "request", requestDetails)
 			return true
 		}
 	}
 	slog.Debug("Authorization failed for the request", "request", requestDetails)
-	return false
-}
-
-func containsRequestDetails(details []RequestDetails, requestDetails RequestDetails) bool {
-	for _, detail := range details {
-		if detail == requestDetails {
-			return true
-		}
-	}
 	return false
 }

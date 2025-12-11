@@ -19,6 +19,7 @@ const (
 	signingMethodRS512 = "RS512"
 )
 
+// validSigningMethods are the valid signing methods.
 var validSigningMethods = []string{signingMethodRS256, signingMethodRS384, signingMethodRS512}
 
 // Service contains the entire service configuration.
@@ -43,6 +44,7 @@ func NewServiceDefault() *Service {
 	}
 }
 
+// SigningMethodRSA returns the jwt.SigningMethodRSA for the signing method.
 func (c *Service) SigningMethodRSA() (*jwt.SigningMethodRSA, error) {
 	var signingMethodRSA *jwt.SigningMethodRSA
 	switch strings.ToUpper(c.SigningMethod) {
@@ -58,6 +60,7 @@ func (c *Service) SigningMethodRSA() (*jwt.SigningMethodRSA, error) {
 	return signingMethodRSA, nil
 }
 
+// RequestParser returns the proxy.RequestParser for the proxy provider.
 func (c *Service) RequestParser() (proxy.RequestParser, error) {
 	var parser proxy.RequestParser
 	switch strings.ToLower(c.ProxyProvider) {
@@ -71,6 +74,7 @@ func (c *Service) RequestParser() (proxy.RequestParser, error) {
 	return parser, nil
 }
 
+// Repository returns the repository.Repository for the repository provider.
 func (c *Service) Repository() (repository.Repository, error) {
 	switch strings.ToLower(c.RepositoryProvider) {
 	case "local":
@@ -84,7 +88,7 @@ func (c *Service) Repository() (repository.Repository, error) {
 	}
 }
 
-// Validate validates the service configuration.
+// Validate validates the service configuration properties.
 func (c *Service) Validate() error {
 	if c == nil {
 		return errors.New("service config is nil")
@@ -116,6 +120,7 @@ func (c *Service) String() string {
 	if err != nil {
 		return err.Error()
 	}
+
 	return string(data)
 }
 
@@ -125,5 +130,6 @@ func (c *Service) StringYaml() string {
 	if err != nil {
 		return err.Error()
 	}
+
 	return string(data)
 }

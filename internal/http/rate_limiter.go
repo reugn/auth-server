@@ -1,6 +1,7 @@
 package http
 
 import (
+	"fmt"
 	"log/slog"
 	"net/netip"
 	"strings"
@@ -33,13 +34,15 @@ func NewIPWhiteList(ipList []string) (*IPWhiteList, error) {
 		if err != nil {
 			ipAddr, err := netip.ParseAddr(ip)
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf("failed to parse IP address %s: %w", ip, err)
 			}
 			addresses[ip] = &ipAddr
 		} else {
 			networks = append(networks, &network)
 		}
 	}
+
+	// return the IP white list
 	return &IPWhiteList{
 		addresses: addresses,
 		networks:  networks,
@@ -47,6 +50,7 @@ func NewIPWhiteList(ipList []string) (*IPWhiteList, error) {
 	}, nil
 }
 
+// isAllowed checks if the IP is in the white list.
 func (wl *IPWhiteList) isAllowed(ip string) bool {
 	if wl.allowAny {
 		return true
