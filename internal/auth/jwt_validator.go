@@ -28,7 +28,11 @@ func NewJWTValidator(keys *Keys, backend repository.Repository) *JWTValidator {
 // validate validates the AccessToken. It returns the claims if the token is valid,
 // an error otherwise.
 func (v *JWTValidator) validate(jwtToken string) (*Claims, error) {
-	token, err := jwt.Parse(jwtToken, func(_ *jwt.Token) (any, error) {
+	token, err := jwt.Parse(jwtToken, func(token *jwt.Token) (any, error) {
+		// validate signing method
+		if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %s", token.Method.Alg())
+		}
 		return v.keys.publicKey, nil
 	})
 	if err != nil {
