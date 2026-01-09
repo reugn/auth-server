@@ -1,17 +1,29 @@
 ---
+# Supported signing methods: RS256, RS384, RS512
 signing-method: RS256
-proxy: traefik
+
+# Supported proxy providers: direct, nginx, traefik, envoy, haproxy, kong
+# Use 'direct' when accessing auth-server without a reverse proxy.
+proxy: direct
+
+# Supported repository providers: local, aerospike, vault
 repository: local
+
+# HTTP server configuration
 http:
-    host: 0.0.0.0
-    port: 8081
-    rate:
-        tps: 1024
-        size: 1024
-        white-list: []
+  host: 0.0.0.0
+  port: 8081
+  rate:
+    tps: 1024
+    size: 1024
+    white-list: [ ]
+
+# Secret configuration
 secret:
-    private-path: secrets/privkey.pem
-    public-path: secrets/cert.pem
+  private-path: secrets/privkey.pem
+  public-path: secrets/cert.pem
+
+# Logger configuration
 logger:
-    level: INFO
-    format: PLAIN
+  level: INFO
+  format: PLAIN

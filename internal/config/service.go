@@ -17,6 +17,12 @@ const (
 	signingMethodRS256 = "RS256"
 	signingMethodRS384 = "RS384"
 	signingMethodRS512 = "RS512"
+
+	proxyProviderDirect = "direct"
+
+	repositoryProviderLocal     = "local"
+	repositoryProviderAerospike = "aerospike"
+	repositoryProviderVault     = "vault"
 )
 
 // validSigningMethods are the valid signing methods.
@@ -36,8 +42,8 @@ type Service struct {
 func NewServiceDefault() *Service {
 	return &Service{
 		SigningMethod:      signingMethodRS256,
-		ProxyProvider:      "simple",
-		RepositoryProvider: "local",
+		ProxyProvider:      proxyProviderDirect,
+		RepositoryProvider: repositoryProviderLocal,
 		HTTP:               NewHTTPDefault(),
 		Secret:             NewSecretDefault(),
 		Logger:             NewLoggerDefault(),
@@ -61,27 +67,20 @@ func (c *Service) SigningMethodRSA() (*jwt.SigningMethodRSA, error) {
 }
 
 // RequestParser returns the proxy.RequestParser for the proxy provider.
-func (c *Service) RequestParser() (proxy.RequestParser, error) {
-	var parser proxy.RequestParser
-	switch strings.ToLower(c.ProxyProvider) {
-	case "simple":
-		parser = proxy.NewSimpleParser()
-	case "traefik":
-		parser = proxy.NewTraefikParser()
-	default:
-		return nil, fmt.Errorf("unsupported proxy provider: %s", c.ProxyProvider)
-	}
-	return parser, nil
+// Supported providers: direct, nginx, traefik, envoy, haproxy, kong.
+// Unknown providers fall back to direct mode with a warning.
+func (c *Service) RequestParser() proxy.RequestParser {
+	return proxy.NewParser(c.ProxyProvider)
 }
 
 // Repository returns the repository.Repository for the repository provider.
 func (c *Service) Repository() (repository.Repository, error) {
 	switch strings.ToLower(c.RepositoryProvider) {
-	case "local":
+	case repositoryProviderLocal:
 		return repository.NewLocal()
-	case "aerospike":
+	case repositoryProviderAerospike:
 		return repository.NewAerospike()
-	case "vault":
+	case repositoryProviderVault:
 		return repository.NewVault()
 	default:
 		return nil, fmt.Errorf("unsupported storage provider: %s", c.RepositoryProvider)

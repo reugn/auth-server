@@ -1,7 +1,7 @@
 ---
 global:
   checkNewVersion: true
-  sendAnonymousUsage: true
+  sendAnonymousUsage: false  # Consider privacy
 
 entryPoints:
   websecure:
@@ -11,7 +11,12 @@ entryPoints:
 
 api:
   dashboard: true
-  insecure: true
+  insecure: true  # Consider adding authentication in production
+  # Optional: Add authentication
+  # dashboard: true
+  # insecure: false
+  # users:
+  #   admin: "$2y$10$..." # bcrypt hash
 
 providers:
   file:
@@ -19,3 +24,13 @@ providers:
     watch: true
   docker:
     network: proxy
+    exposedByDefault: false  # Only expose containers with traefik.enable=true
+
+# Optional: Add logging
+# log:
+#   level: INFO
+#   format: json
+
+# Optional: Add metrics
+# metrics:
+#   prometheus: {}

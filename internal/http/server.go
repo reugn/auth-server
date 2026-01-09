@@ -10,6 +10,7 @@ import (
 	"github.com/reugn/auth-server/internal/config"
 	"github.com/reugn/auth-server/internal/proxy"
 	"github.com/reugn/auth-server/internal/repository"
+	"github.com/reugn/auth-server/internal/util/httputil"
 	"golang.org/x/time/rate"
 )
 
@@ -29,22 +30,13 @@ type Server struct {
 // It initializes the server with the given version, keys, and configuration.
 func NewServer(version string, keys *auth.Keys, config *config.Service) (*Server, error) {
 	address := fmt.Sprintf("%s:%d", config.HTTP.Host, config.HTTP.Port)
-	repository, err := config.Repository()
+	repo, err := config.Repository()
 	if err != nil {
 		return nil, err
 	}
 
 	// get the signing method
 	signingMethod, err := config.SigningMethodRSA()
-	if err != nil {
-		return nil, err
-	}
-
-	generator := auth.NewJWTGenerator(keys, signingMethod)
-	validator := auth.NewJWTValidator(keys, repository)
-
-	// get the request parser
-	requestParser, err := config.RequestParser()
 	if err != nil {
 		return nil, err
 	}
@@ -58,12 +50,12 @@ func NewServer(version string, keys *auth.Keys, config *config.Service) (*Server
 	return &Server{
 		address:      address,
 		version:      version,
-		parser:       requestParser,
-		repository:   repository,
+		parser:       config.RequestParser(),
+		repository:   repo,
 		rateLimiter:  NewIPRateLimiter(rate.Limit(config.HTTP.Rate.Tps), config.HTTP.Rate.Size),
 		ipWhiteList:  ipWhiteList,
-		jwtGenerator: generator,
-		jwtValidator: validator,
+		jwtGenerator: auth.NewJWTGenerator(keys, signingMethod),
+		jwtValidator: auth.NewJWTValidator(keys, repo),
 	}, nil
 }
 
@@ -113,6 +105,8 @@ func (ws *Server) Start() error {
 
 	// authorization route, requires a JSON Web Token
 	mux.HandleFunc("/auth", ws.authActionHandler)
+	// prefix match for Envoy ext_authz (handles /auth/health, /auth/ready, etc.)
+	mux.HandleFunc("/auth/", ws.authActionHandler)
 
 	//nolint:gosec
 	return http.ListenAndServe(ws.address, ws.rateLimiterMiddleware(mux))
@@ -142,6 +136,7 @@ func (ws *Server) tokenActionHandler(w http.ResponseWriter, r *http.Request) {
 	// get the basic authentication credentials
 	user, pass, ok := r.BasicAuth()
 	if !ok {
+		slog.Info("Failed to get basic authentication credentials", httputil.LogAttrs(r)...)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -149,13 +144,20 @@ func (ws *Server) tokenActionHandler(w http.ResponseWriter, r *http.Request) {
 	// authenticate the user
 	userDetails := ws.repository.AuthenticateBasic(user, pass)
 	if userDetails == nil {
+		slog.Info("Failed to authenticate user", httputil.LogAttrs(r,
+			slog.String("username", user))...)
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
+	slog.Debug("User authenticated", httputil.LogAttrs(r,
+		slog.String("username", user), slog.String("role", string(userDetails.UserRole)))...)
+
 	// generate the access token
 	accessToken, err := ws.jwtGenerator.Generate(userDetails.UserName, userDetails.UserRole)
 	if err != nil {
+		slog.Error("Failed to generate access token", httputil.LogAttrs(r,
+			slog.String("username", user), slog.Any("error", err))...)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -163,6 +165,8 @@ func (ws *Server) tokenActionHandler(w http.ResponseWriter, r *http.Request) {
 	// marshal the access token
 	marshalled, err := accessToken.Marshal()
 	if err != nil {
+		slog.Error("Failed to marshal access token", httputil.LogAttrs(r,
+			slog.String("username", user), slog.Any("error", err))...)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
