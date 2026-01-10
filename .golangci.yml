@@ -37,6 +37,14 @@ linters:
           - funlen
           - unparam
         path: _test\.go
+      - linters:
+          - revive
+        path: internal/http/
+        text: "var-naming.*package names"
+      - linters:
+          - revive
+        path: internal/util/hash/
+        text: "var-naming.*package names"
     paths:
       - third_party$
       - builtin$
