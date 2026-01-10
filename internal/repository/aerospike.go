@@ -3,7 +3,7 @@ package repository
 import (
 	"log/slog"
 
-	as "github.com/aerospike/aerospike-client-go/v7"
+	as "github.com/aerospike/aerospike-client-go/v8"
 	"github.com/reugn/auth-server/internal/util/env"
 )
 
