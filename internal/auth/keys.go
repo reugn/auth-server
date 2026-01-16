@@ -3,6 +3,7 @@ package auth
 import (
 	"crypto/rsa"
 	"errors"
+	"fmt"
 	"os"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -51,11 +52,12 @@ func NewKeysFromPem(privatePem []byte, publicPem []byte) (*Keys, error) {
 	return &Keys{priv, pub}, nil
 }
 
+// parsePrivateKey parses the private key from the file or the PEM bytes.
 func parsePrivateKey(privateKeyPath *string, pem []byte) (*rsa.PrivateKey, error) {
 	if privateKeyPath != nil {
 		pem, err := os.ReadFile(*privateKeyPath)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("failed to read private key file %s: %w", *privateKeyPath, err)
 		}
 		return jwt.ParseRSAPrivateKeyFromPEM(pem)
 	} else if pem != nil {
@@ -64,11 +66,12 @@ func parsePrivateKey(privateKeyPath *string, pem []byte) (*rsa.PrivateKey, error
 	return nil, errors.New("parsePrivateKey nil parameters")
 }
 
+// parsePublicKey parses the public key from the file or the PEM bytes.
 func parsePublicKey(publicKeyPath *string, pem []byte) (*rsa.PublicKey, error) {
 	if publicKeyPath != nil {
 		pem, err := os.ReadFile(*publicKeyPath)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("failed to read public key file %s: %w", *publicKeyPath, err)
 		}
 		return jwt.ParseRSAPublicKeyFromPEM(pem)
 	} else if pem != nil {

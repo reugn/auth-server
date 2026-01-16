@@ -2,6 +2,7 @@ package auth
 
 import (
 	"encoding/json"
+	"fmt"
 	"log/slog"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -46,7 +47,8 @@ func (t *AccessToken) Marshal() (string, error) {
 	jsonByteArray, err := json.Marshal(t)
 	if err != nil {
 		slog.Debug("Failed to marshal token", "err", err)
-		return "", err
+		return "", fmt.Errorf("failed to marshal token: %w", err)
 	}
+
 	return string(jsonByteArray), nil
 }

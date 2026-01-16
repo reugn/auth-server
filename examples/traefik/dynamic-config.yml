@@ -10,24 +10,37 @@ http:
     test-auth:
       forwardAuth:
         address: http://auth-server:8081/auth
-        authResponseHeaders:
-          - "X-Auth-User"
-          - "X-Secret"
+        # Remove authResponseHeaders - auth-server doesn't set these headers
+        # authResponseHeaders are only useful if your auth service sets them
         trustForwardHeader: true
+        # Optional: Add authRequestHeaders to forward specific headers
+        # authRequestHeaders:
+        #   - "X-Forwarded-Method"
+        #   - "X-Forwarded-Uri"
 
   routers:
+    # Router for token endpoint (no auth required)
     token-router:
-      rule: "Path(`/token`)"
+      rule: "PathPrefix(`/token`)"
       service: auth-server
       entrypoints:
         - http
-      priority: 2
+      priority: 10
 
+    # Router for auth endpoint (no auth required - it is the auth endpoint)
     auth-router:
-      rule: "HostRegexp(`{host:.*}`)"
+      rule: "PathPrefix(`/auth`)"
+      service: auth-server
+      entrypoints:
+        - http
+      priority: 10
+
+    # Protected route - forwards to auth-server health endpoint as demo
+    health-router:
+      rule: "PathPrefix(`/health`)"
       middlewares:
         - test-auth
       service: auth-server
       entrypoints:
         - http
-      priority: 1
+      priority: 5

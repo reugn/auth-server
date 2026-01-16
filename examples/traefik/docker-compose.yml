@@ -1,35 +1,47 @@
-version: '3.4'
-
 networks:
   proxy:
 
 services:
   reverse-proxy:
     restart: always
-    image: traefik:v2.11
+    image: traefik:v3.0
     container_name: traefik
     ports:
-      - 443:443
-      - 8082:8082
+      - "443:443"
+      - "8082:8082"
+      - "8080:8080"  # Dashboard port
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - ./traefik.yml:/etc/traefik/traefik.yml
-      - ./dynamic-config.yml:/etc/traefik/dynamic-config.yml
-    labels:
-      - "traefik.http.routers.site.entryPoints=http,websecure"
-      - "traefik.enable=true"
-      - "traefik.port=8082"
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik.yml:/etc/traefik/traefik.yml:ro
+      - ./dynamic-config.yml:/etc/traefik/dynamic-config.yml:ro
     networks:
       - proxy
+    labels:
+      # Remove incorrect labels - Traefik doesn't need labels on itself
+      - "traefik.enable=true"
 
   auth-server:
     restart: always
     container_name: auth-server
-    ports:
-      - 8081:8081
-    image: auth-server
+    image: auth-server:latest
     build:
+      context: ../..
       dockerfile: Dockerfile
-      context: ../../.
+    ports:
+      - "8081:8081"
+    volumes:
+      # Mount config files (use example-specific service config)
+      - ./service_config.yml:/app/service_config.yml:ro
+      - ../../config/local_repository_config.yml:/app/local_repository_config.yml:ro
+      # Mount secrets
+      - ../../secrets:/app/secrets:ro
+    environment:
+      - AUTH_SERVER_LOCAL_CONFIG_PATH=/app/local_repository_config.yml
     networks:
       - proxy
+    healthcheck:
+      test: [ "CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8081/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s

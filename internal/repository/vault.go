@@ -11,7 +11,7 @@ import (
 // Environment variables to configure VaultRepository.
 const (
 	envVaultAddr     = "AUTH_SERVER_VAULT_ADDR"
-	envVaultToken    = "AUTH_SERVER_VAULT_TOKEN"
+	envVaultToken    = "AUTH_SERVER_VAULT_TOKEN" //nolint:gosec
 	envVaultBasicKey = "AUTH_SERVER_VAULT_BASIC_KEY"
 	envVaultAuthKey  = "AUTH_SERVER_VAULT_AUTHORIZATION_KEY"
 )
@@ -56,10 +56,12 @@ func NewVault() (*VaultRepository, error) {
 	apiConfig := &api.Config{
 		Address: config.vaultAddr,
 	}
+
 	client, err := api.NewClient(apiConfig)
 	if err != nil {
 		return nil, err
 	}
+
 	client.SetToken(config.vaultToken)
 
 	return &VaultRepository{
@@ -84,9 +86,15 @@ func (vr *VaultRepository) AuthenticateBasic(username string, password string) *
 		return nil
 	}
 
+	role, ok := secret.Data["role"].(UserRole)
+	if !ok {
+		slog.Error("Invalid role type", "role", secret.Data["role"])
+		return nil
+	}
+
 	return &UserDetails{
 		UserName: username,
-		UserRole: secret.Data["role"].(UserRole),
+		UserRole: role,
 	}
 }
 

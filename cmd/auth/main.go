@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log/slog"
 	"os"
 
@@ -12,7 +13,7 @@ import (
 )
 
 const (
-	version = "0.4.0"
+	version = "0.5.0"
 )
 
 func run() int {
@@ -50,21 +51,32 @@ func run() int {
 		return server.Start()
 	}
 
-	err := rootCmd.Execute()
-	if err != nil {
+	if err := rootCmd.Execute(); err != nil {
 		return 1
 	}
 	return 0
 }
 
+// readConfiguration reads the configuration file and returns the configuration.
 func readConfiguration(path string) (*config.Service, error) {
+	// read the configuration file
 	data, err := os.ReadFile(path)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to read configuration file %s: %w", path, err)
 	}
+
+	// unmarshal the configuration data
 	config := config.NewServiceDefault()
-	err = yaml.Unmarshal(data, config)
-	return config, err
+	if err := yaml.Unmarshal(data, config); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal configuration data: %w", err)
+	}
+
+	// validate the configuration
+	if err := config.Validate(); err != nil {
+		return nil, fmt.Errorf("invalid configuration: %w", err)
+	}
+
+	return config, nil
 }
 
 func main() {

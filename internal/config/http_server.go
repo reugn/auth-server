@@ -25,6 +25,7 @@ type RateLimiter struct {
 	WhiteList []string `yaml:"white-list,omitempty" json:"white-list,omitempty"`
 }
 
+// validate validates the RateLimiter configuration.
 func (c *RateLimiter) validate() error {
 	if c == nil {
 		return errors.New("rate limiter config is nil")

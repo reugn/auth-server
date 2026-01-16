@@ -1,0 +1,43 @@
+networks:
+  proxy:
+
+services:
+  envoy:
+    restart: always
+    image: envoyproxy/envoy:v1.30-latest
+    container_name: envoy
+    ports:
+      - "8082:8082"
+      - "9901:9901"  # Admin interface
+    volumes:
+      - ./envoy.yaml:/etc/envoy/envoy.yaml:ro
+    depends_on:
+      - auth-server
+    networks:
+      - proxy
+    command: /usr/local/bin/envoy -c /etc/envoy/envoy.yaml --service-cluster front-proxy
+
+  auth-server:
+    restart: always
+    container_name: auth-server
+    image: auth-server:latest
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+    ports:
+      - "8081:8081"
+    volumes:
+      # Mount config files (use example-specific service config)
+      - ./service_config.yml:/app/service_config.yml:ro
+      - ../../config/local_repository_config.yml:/app/local_repository_config.yml:ro
+      - ../../secrets:/app/secrets:ro
+    environment:
+      - AUTH_SERVER_LOCAL_CONFIG_PATH=/app/local_repository_config.yml
+    networks:
+      - proxy
+    healthcheck:
+      test: [ "CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8081/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s

@@ -23,7 +23,7 @@ type RequestDetails struct {
 	URI    string `yaml:"uri"`
 }
 
-// String implements the fmt.Stringer interface.
+// String returns a string representation of the RequestDetails.
 func (r RequestDetails) String() string {
 	return fmt.Sprintf("%s %s", r.Method, r.URI)
 }
@@ -39,6 +39,7 @@ type Repository interface {
 	AuthorizeRequest(userRole UserRole, request RequestDetails) bool
 }
 
+// isAuthorizedRequest checks if the role has permissions to access the endpoint.
 func isAuthorizedRequest(scopes []map[string]string, request RequestDetails) bool {
 	for _, scope := range scopes {
 		if (scope["method"] == "*" || scope["method"] == request.Method) &&
@@ -51,18 +52,20 @@ func isAuthorizedRequest(scopes []map[string]string, request RequestDetails) boo
 	return false
 }
 
+// HashAndSalt hashes and salts the password using the bcrypt algorithm.
 func HashAndSalt(pwd string) ([]byte, error) {
 	bytePwd := []byte(pwd)
 
 	// use bcrypt.GenerateFromPassword to hash and salt the password
 	hash, err := bcrypt.GenerateFromPassword(bytePwd, bcrypt.MinCost)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to bcrypt hash password: %w", err)
 	}
 
 	return hash, nil
 }
 
+// pwdMatch checks if the hashed password matches the plain password.
 func pwdMatch(hashed string, plain string) bool {
 	hashedBytes := []byte(hashed)
 	plainBytes := []byte(plain)

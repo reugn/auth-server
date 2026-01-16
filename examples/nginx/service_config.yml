@@ -1,0 +1,28 @@
+---
+# Nginx-specific service configuration
+signing-method: RS256
+
+# Nginx proxy provider
+proxy: nginx
+
+# Repository provider
+repository: local
+
+# HTTP server configuration
+http:
+  host: 0.0.0.0
+  port: 8081
+  rate:
+    tps: 1024
+    size: 1024
+    white-list: [ ]
+
+# Secret configuration (paths are relative to /app in container)
+secret:
+  private-path: secrets/privkey.pem
+  public-path: secrets/cert.pem
+
+# Logger configuration
+logger:
+  level: DEBUG
+  format: PLAIN

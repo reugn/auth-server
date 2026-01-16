@@ -74,7 +74,9 @@ func TestJWT_Authorize(t *testing.T) {
 			false,
 		},
 	}
-	for _, tt := range tests {
+
+	for _, test := range tests {
+		tt := test
 		t.Run(tt.name, func(t *testing.T) {
 			userDetails := repo.AuthenticateBasic(tt.username, tt.password)
 			if userDetails == nil {
@@ -84,10 +86,12 @@ func TestJWT_Authorize(t *testing.T) {
 					return
 				}
 			}
+
 			token, err := tokenGenerator.Generate(tt.username, userDetails.UserRole)
 			if err != nil {
 				t.Fatal(err)
 			}
+
 			authorized := tokenValidator.Authorize(token.Token, &tt.request)
 			if authorized != tt.authorized {
 				t.Fatal("authorization result mismatch")

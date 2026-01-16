@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -9,6 +10,7 @@ import (
 )
 
 const (
+	//nolint:gosec
 	envTokenExpireAfterMillis = "AUTH_SERVER_ACCESS_TOKEN_EXPIRATION_MILLIS"
 )
 
@@ -49,7 +51,7 @@ func (gen *JWTGenerator) Generate(username string, role repository.UserRole) (*A
 	token.Claims = &claims
 	signed, err := token.SignedString(gen.keys.privateKey)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to sign token: %w", err)
 	}
 
 	// create an access token
